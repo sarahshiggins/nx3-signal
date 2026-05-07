@@ -30,9 +30,9 @@ CORS(app)  # Allow cross-origin requests (for local dev / CDN frontends)
 
 # ─── Config from Environment ──────────────────────────────────────────────────
 
-PERPLEXITY_API_KEY = os.environ.get("PERPLEXITY_API_KEY", "")
-RESEND_API_KEY = os.environ.get("RESEND_API_KEY", "")
-ALERT_SECRET = os.environ.get("ALERT_SECRET", "change-me-in-production")
+def _get_env(key, default=""):
+    """Read env var at call time — avoids Railway startup race conditions."""
+    return os.environ.get(key, default)
 DATABASE_PATH = os.environ.get("DATABASE_URL", "nx3signal.db")
 
 # Strip sqlite:/// prefix if someone passes a full URL
@@ -171,7 +171,7 @@ def call_perplexity(prompt: str, system_msg: str = None) -> dict:
     Raises ValueError if the API key is missing or the response can't be parsed.
     Raises requests.HTTPError on API failures.
     """
-    if not PERPLEXITY_API_KEY:
+    if not _get_env("PERPLEXITY_API_KEY"):
         raise ValueError("PERPLEXITY_API_KEY environment variable is not set.")
 
     if system_msg is None:
@@ -184,7 +184,7 @@ def call_perplexity(prompt: str, system_msg: str = None) -> dict:
     resp = requests.post(
         "https://api.perplexity.ai/chat/completions",
         headers={
-            "Authorization": f"Bearer {PERPLEXITY_API_KEY}",
+            "Authorization": f"Bearer {_get_env('PERPLEXITY_API_KEY')}",
             "Content-Type": "application/json",
         },
         json={
@@ -225,14 +225,14 @@ def call_perplexity(prompt: str, system_msg: str = None) -> dict:
 
 def send_resend_email(to_email: str, subject: str, html_body: str) -> bool:
     """Send an HTML email via the Resend API. Returns True on success."""
-    if not RESEND_API_KEY:
+    if not _get_env("RESEND_API_KEY"):
         app.logger.warning("RESEND_API_KEY not set — skipping email send.")
         return False
 
     resp = requests.post(
         "https://api.resend.com/emails",
         headers={
-            "Authorization": f"Bearer {RESEND_API_KEY}",
+            "Authorization": f"Bearer {_get_env('RESEND_API_KEY')}",
             "Content-Type": "application/json",
         },
         json={
@@ -365,7 +365,7 @@ def analyze():
     if not vertical:
         return jsonify({"error": "vertical is required"}), 400
 
-    if not PERPLEXITY_API_KEY:
+    if not _get_env("PERPLEXITY_API_KEY"):
         return jsonify({"error": "Server is not configured with a Perplexity API key. Contact the admin."}), 503
 
     try:
@@ -485,7 +485,7 @@ def send_alert():
     """
     # ── Auth ──────────────────────────────────────────────────────────────────
     secret = request.headers.get("X-Alert-Secret", "")
-    if secret != ALERT_SECRET:
+    if secret != _get_env("ALERT_SECRET", "change-me-in-production"):
         return jsonify({"error": "Unauthorized"}), 401
 
     db = get_db()
