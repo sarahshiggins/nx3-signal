@@ -345,7 +345,16 @@ def index():
 @app.route("/health")
 def health():
     """Railway health check endpoint."""
-    return jsonify({"status": "ok"})
+    return jsonify({
+        "status": "ok",
+        "env_check": {
+            "PERPLEXITY_API_KEY": bool(os.environ.get("PERPLEXITY_API_KEY")),
+            "RESEND_API_KEY": bool(os.environ.get("RESEND_API_KEY")),
+            "ALERT_SECRET": bool(os.environ.get("ALERT_SECRET")),
+        },
+        "env_count": len([k for k in os.environ if "PERPLEXITY" in k or "RESEND" in k or "ALERT" in k]),
+        "all_env_keys": sorted([k for k in os.environ.keys()])
+    })
 
 
 @app.route("/api/analyze", methods=["POST"])
