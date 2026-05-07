@@ -1,12 +1,12 @@
 # NX3 Signal — Vertical Market Intelligence
 
-A professional internal research tool built for Nexus3 Capital to evaluate vertical markets against the Nexus3 AI investment thesis.
+A professional internal research tool built for Nexus3 to evaluate vertical markets against the Nexus3 AI investment thesis.
 
 ---
 
 ## What It Is
 
-NX3 Signal is a browser-based market research tool that takes any industry vertical as input and generates a structured intelligence report in seconds. It scores each vertical against Nexus3 Capital's 5-criterion investment thesis, maps the competitive landscape with real incumbents and AI-native players, and — for verticals that pass the bar — generates a venture outline using Nexus3's operating playbook.
+NX3 Signal is a browser-based market research tool that takes any industry vertical as input and generates a structured intelligence report in seconds. It scores each vertical against Nexus3's 5-criterion investment thesis, maps the competitive landscape with real incumbents and AI-native players, and — for verticals that pass the bar — generates a venture outline using Nexus3's operating playbook.
 
 Think of it as an AI analyst that's been pre-briefed on exactly how Nexus3 evaluates opportunities.
 
@@ -14,7 +14,7 @@ Think of it as an AI analyst that's been pre-briefed on exactly how Nexus3 evalu
 
 ## Why It Was Built
 
-Nexus3 Capital builds, invests in, and acquires generative AI vertical SaaS companies. Evaluating new verticals quickly — before committing to deeper diligence — is a recurring need. NX3 Signal automates the first pass: market sizing, competitive scanning, thesis alignment scoring, and initial venture hypothesis, all in a repeatable, structured format.
+Nexus3 builds, invests in, and acquires generative AI vertical SaaS companies. Evaluating new verticals quickly — before committing to deeper diligence — is a recurring need. NX3 Signal automates the first pass: market sizing, competitive scanning, thesis alignment scoring, and initial venture hypothesis, all in a repeatable, structured format.
 
 ---
 
@@ -89,5 +89,5 @@ The free tier includes credits sufficient for dozens of analyses.
 
 ---
 
-*Built by Sarah Higgins, Nexus3 Capital.*
+*Built by Sarah Higgins, Nexus3.*
 
