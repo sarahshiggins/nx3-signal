@@ -313,7 +313,7 @@ def send_resend_email(to_email: str, subject: str, html_body: str) -> bool:
             "Content-Type": "application/json",
         },
         json={
-            "from": "NX3 Signal <onboarding@resend.dev>",
+            "from": "NX3 Signal <signal@nexus3cap.com>",
             "to": [to_email],
             "subject": subject,
             "html": html_body,
