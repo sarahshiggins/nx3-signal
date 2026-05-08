@@ -89,7 +89,27 @@
     @keyframes stepFade { 0%{opacity:0;transform:translateX(-8px)} 100%{opacity:1;transform:translateX(0)} }
     .step-item { animation:stepFade .3s ease forwards; }
     @media(max-width:640px){ .search-row{flex-direction:column} .btn-analyze{width:100%;padding:.85rem} }
-    /* Watchlist */
+    /* Pins Tab */
+    .pins-empty { display:flex; flex-direction:column; align-items:center; justify-content:center; padding:3rem 1.5rem; text-align:center; }
+    .pins-empty-icon { font-size:2.5rem; margin-bottom:1rem; opacity:.5; }
+    .pins-empty-title { font-family:'Bebas Neue',sans-serif; font-size:1.4rem; letter-spacing:.06em; color:var(--text-dim); margin-bottom:.5rem; }
+    .pins-empty-desc { font-size:.85rem; color:var(--text-muted); max-width:360px; line-height:1.5; }
+    .pin-list-item { display:flex; align-items:center; justify-content:space-between; gap:1rem; padding:1rem 1.25rem; border-bottom:1px solid var(--border); transition:background .15s; }
+    .pin-list-item:last-child { border-bottom:none; }
+    .pin-list-item:hover { background:rgba(255,255,255,.02); }
+    .pin-list-info { flex:1; min-width:0; }
+    .pin-list-vertical { font-family:'Bebas Neue',sans-serif; font-size:1.15rem; letter-spacing:.05em; color:var(--text); line-height:1.2; }
+    .pin-list-meta { font-size:.7rem; color:var(--text-muted); font-family:'JetBrains Mono',monospace; margin-top:.2rem; }
+    .pin-list-label { font-size:.72rem; color:var(--text-dim); margin-top:.15rem; }
+    .pin-list-actions { display:flex; align-items:center; gap:.5rem; flex-shrink:0; }
+    .btn-analyze-sm { font-family:'Bebas Neue',sans-serif; font-size:.82rem; letter-spacing:.08em; background:var(--surface2); color:var(--text-dim); border:1px solid var(--border); padding:.45rem .85rem; border-radius:5px; cursor:pointer; transition:border-color .2s,color .2s,background .2s; white-space:nowrap; }
+    .btn-analyze-sm:hover { border-color:var(--accent); color:var(--text); background:rgba(220,38,38,.06); }
+    .btn-unpin { font-family:'JetBrains Mono',monospace; font-size:.72rem; letter-spacing:.04em; color:#ef4444; background:rgba(220,38,38,.06); border:1px solid rgba(220,38,38,.2); padding:.4rem .75rem; border-radius:5px; cursor:pointer; transition:background .15s,border-color .15s; white-space:nowrap; }
+    .btn-unpin:hover { background:rgba(220,38,38,.15); border-color:rgba(220,38,38,.45); }
+    .pin-count-badge { font-family:'JetBrains Mono',monospace; font-size:.65rem; color:var(--accent); margin-left:.35rem; }
+    .pins-section { background:var(--surface); border:1px solid var(--border); border-radius:10px; overflow:hidden; }
+    .pins-section-header { padding:1rem 1.25rem; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; }
+    /* Legacy watchlist (compat) */
     .watchlist-section { background:var(--surface); border:1px solid var(--border); border-radius:10px; overflow:hidden; }
     .watchlist-header { padding:1rem 1.25rem; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; }
     .watchlist-item { display:flex; align-items:center; justify-content:space-between; gap:1rem; padding:.75rem 1.25rem; border-bottom:1px solid var(--border); transition:background .15s; }
@@ -207,6 +227,13 @@
       </div>
     </header>
 
+    <!-- -- Tab Navigation --------------------------------------------------- -->
+    <div class="tab-nav" id="mainTabNav">
+      <button class="tab-btn active" data-action="show-discover-tab" id="tabBtnDiscover">Discover</button>
+      <button class="tab-btn" data-action="show-analyze-tab" id="tabBtnAnalyze">Analyze</button>
+      <button class="tab-btn" data-action="show-pins-tab" id="tabBtnPins">My Pins<span id="pinCountBadge" class="pin-count-badge"></span></button>
+    </div>
+
     <!-- -- Analyze Tab ------------------------------------------------------ -->
     <div id="analyzeTab" style="display:none">
       <div class="mb-10">
@@ -259,24 +286,18 @@
 
       <div id="discoverContent"></div>
 
-      <!-- -- Watchlist ---------------------------------------------------- -->
-      <div id="watchlistSection" style="display:none" class="mt-12">
-        <div class="section-label">Your Pins</div>
-        <div class="section-title">Watchlist</div>
-        <div class="divider"></div>
-        <div class="watchlist-section">
-          <div class="watchlist-header">
-            <div>
-              <span class="mono text-xs text-[var(--text-muted)] uppercase tracking-wider">Pinned Verticals</span>
-              <span id="watchlistCount" class="mono text-xs text-[var(--text-muted)] ml-3"></span>
-            </div>
-            <button data-action="refresh-watchlist" class="mono text-xs text-[var(--text-muted)] hover:text-[var(--text)] transition-colors">↻ Refresh</button>
-          </div>
-          <div id="watchlistItems"></div>
-        </div>
-      </div>
-
     </div><!-- /discoverTab -->
+
+    <!-- -- My Pins Tab ------------------------------------------------------- -->
+    <div id="pinsTab" style="display:none">
+      <div class="mb-6">
+        <div class="section-label">Your Watchlist</div>
+        <div class="section-title">Pinned Verticals</div>
+        <div class="divider"></div>
+        <p class="text-sm text-[var(--text-dim)] -mt-2 mb-6">Track verticals you're interested in. Pinned verticals receive weekly market updates.</p>
+      </div>
+      <div id="pinsTabContent"></div>
+    </div>
 
     <!-- Footer -->
     <footer class="mt-16 pt-6 border-t border-[var(--border)]">
@@ -481,15 +502,111 @@
       runAnalysis();
     }
 
+    function setActiveTab(tabId) {
+      document.querySelectorAll('#mainTabNav .tab-btn').forEach(btn => btn.classList.remove('active'));
+      const btnMap = { analyzeTab: 'tabBtnAnalyze', discoverTab: 'tabBtnDiscover', pinsTab: 'tabBtnPins' };
+      const activeBtn = document.getElementById(btnMap[tabId]);
+      if (activeBtn) activeBtn.classList.add('active');
+    }
+
     function showAnalyzeTab() {
       document.getElementById('analyzeTab').style.display = 'block';
       document.getElementById('discoverTab').style.display = 'none';
+      document.getElementById('pinsTab').style.display = 'none';
+      setActiveTab('analyzeTab');
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     function showDiscoverTab() {
       document.getElementById('analyzeTab').style.display = 'none';
       document.getElementById('discoverTab').style.display = 'block';
+      document.getElementById('pinsTab').style.display = 'none';
+      setActiveTab('discoverTab');
+    }
+
+    function showPinsTab() {
+      document.getElementById('analyzeTab').style.display = 'none';
+      document.getElementById('discoverTab').style.display = 'none';
+      document.getElementById('pinsTab').style.display = 'block';
+      setActiveTab('pinsTab');
+      refreshPinsTab();
+    }
+
+    function updatePinCountBadge() {
+      const badge = document.getElementById('pinCountBadge');
+      const count = userPinnedVerticals.size;
+      badge.textContent = count > 0 ? ` (${count})` : '';
+    }
+
+    async function refreshPinsTab() {
+      const email = localStorage.getItem('nx3_user_email');
+      const container = document.getElementById('pinsTabContent');
+      if (!email) {
+        container.innerHTML = `
+          <div class="pins-empty">
+            <div class="pins-empty-icon">📌</div>
+            <div class="pins-empty-title">No Pins Yet</div>
+            <div class="pins-empty-desc">Enter your email first, then run an analysis and pin verticals you want to track.</div>
+          </div>`;
+        return;
+      }
+
+      try {
+        const resp = await fetch(`/api/pins?email=${encodeURIComponent(email)}`);
+        if (!resp.ok) throw new Error('Failed to load pins');
+        const pins = await resp.json();
+
+        // Sync the pinned set
+        userPinnedVerticals.clear();
+        pins.forEach(pin => userPinnedVerticals.add(pin.vertical.toLowerCase()));
+        updatePinCountBadge();
+        markPinnedDiscoverCards();
+
+        if (!pins.length) {
+          container.innerHTML = `
+            <div class="pins-empty">
+              <div class="pins-empty-icon">📌</div>
+              <div class="pins-empty-title">No Pins Yet</div>
+              <div class="pins-empty-desc">Run an analysis and pin verticals you want to track. Pinned verticals show up here for quick access.</div>
+              <button data-action="show-discover-tab" class="btn-analyze-sm" style="margin-top:1.25rem;padding:.55rem 1.25rem">Browse Verticals →</button>
+            </div>`;
+          return;
+        }
+
+        let rows = pins.map(pin => {
+          const pinnedDate = pin.created_at ? new Date(pin.created_at).toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' }) : '';
+          return `
+            <div class="pin-list-item" data-pin-row-id="${pin.id}">
+              <div class="pin-list-info">
+                <div class="pin-list-vertical">${escHtml(pin.vertical)}</div>
+                ${pin.label ? `<div class="pin-list-label">${escHtml(pin.label)}</div>` : ''}
+                ${pinnedDate ? `<div class="pin-list-meta">Pinned ${pinnedDate}</div>` : ''}
+              </div>
+              <div class="pin-list-actions">
+                <button class="btn-analyze-sm" data-action="run-from-discover" data-workflow-name="${escHtml(pin.vertical)}">Analyze →</button>
+                <button class="btn-unpin" data-action="unpin-from-pins-tab" data-pin-id="${pin.id}">✕ Unpin</button>
+              </div>
+            </div>`;
+        }).join('');
+
+        container.innerHTML = `
+          <div class="pins-section">
+            <div class="pins-section-header">
+              <span class="mono text-xs text-[var(--text-muted)] uppercase tracking-wider">${pins.length} Pinned Vertical${pins.length !== 1 ? 's' : ''}</span>
+              <button data-action="refresh-pins-tab" class="mono text-xs text-[var(--text-muted)] hover:text-[var(--text)] transition-colors">↻ Refresh</button>
+            </div>
+            ${rows}
+          </div>`;
+
+      } catch(err) {
+        container.innerHTML = `
+          <div class="pins-empty">
+            <div class="pins-empty-icon">⚠️</div>
+            <div class="pins-empty-title">Failed to Load Pins</div>
+            <div class="pins-empty-desc">${escHtml(err.message)}</div>
+            <button data-action="refresh-pins-tab" class="btn-analyze-sm" style="margin-top:1rem">Try Again</button>
+          </div>`;
+      }
     }
 
     function escHtml(s) {
@@ -669,11 +786,16 @@
 
         // Add to local pinned set immediately
         userPinnedVerticals.add(vertical.toLowerCase());
+        updatePinCountBadge();
         markPinnedDiscoverCards();
 
         setTimeout(() => {
           closePinModal();
           refreshWatchlist();
+          // If pins tab is visible, refresh it
+          if (document.getElementById('pinsTab').style.display !== 'none') {
+            refreshPinsTab();
+          }
         }, 1200);
 
       } catch(err) {
@@ -687,8 +809,56 @@
       try {
         const resp = await fetch(`/api/pins/${pinId}`, { method: 'DELETE' });
         if (!resp.ok) throw new Error('Failed to unpin');
-        // Refresh watchlist (which also updates discover card badges)
+        // Refresh watchlist (which also updates discover card badges and pin count)
         await refreshWatchlist();
+        // Refresh pins tab if visible
+        if (document.getElementById('pinsTab').style.display !== 'none') {
+          refreshPinsTab();
+        }
+
+        // Also update pin button in analysis results if visible
+        const pinBtn = document.getElementById('pinResultBtn');
+        if (pinBtn && pinBtn.classList.contains('pinned')) {
+          const vertical = pinBtn.dataset.vertical;
+          if (vertical && !userPinnedVerticals.has(vertical.toLowerCase())) {
+            pinBtn.textContent = '📌 Pin this vertical';
+            pinBtn.classList.remove('pinned');
+            pinBtn.setAttribute('data-action', 'open-pin-modal');
+            pinBtn.style.cursor = 'pointer';
+          }
+        }
+      } catch(err) {
+        alert('Failed to unpin: ' + err.message);
+      }
+    }
+
+    async function unpinFromPinsTab(pinId, btnEl) {
+      try {
+        const resp = await fetch(`/api/pins/${pinId}`, { method: 'DELETE' });
+        if (!resp.ok) throw new Error('Failed to unpin');
+
+        // Remove the row from the DOM immediately
+        const row = btnEl.closest('.pin-list-item');
+        if (row) {
+          row.style.transition = 'opacity .25s ease, transform .25s ease';
+          row.style.opacity = '0';
+          row.style.transform = 'translateX(20px)';
+          setTimeout(() => row.remove(), 260);
+        }
+
+        // Refresh data state
+        await refreshWatchlist();
+
+        // Update the pins tab header count after a short delay (to let animation finish)
+        setTimeout(() => {
+          const header = document.querySelector('.pins-section-header span');
+          const count = userPinnedVerticals.size;
+          if (header) {
+            header.textContent = `${count} Pinned Vertical${count !== 1 ? 's' : ''}`;
+          }
+          // If no pins left, re-render the empty state
+          if (count === 0) refreshPinsTab();
+        }, 300);
 
         // Also update pin button in analysis results if visible
         const pinBtn = document.getElementById('pinResultBtn');
@@ -719,33 +889,8 @@
         userPinnedVerticals.clear();
         pins.forEach(pin => userPinnedVerticals.add(pin.vertical.toLowerCase()));
 
-        const section = document.getElementById('watchlistSection');
-        const itemsEl = document.getElementById('watchlistItems');
-        const countEl = document.getElementById('watchlistCount');
-
-        if (!pins.length) {
-          section.style.display = 'none';
-          markPinnedDiscoverCards();
-          return;
-        }
-
-        section.style.display = 'block';
-        countEl.textContent = `${pins.length} pinned`;
-
-        itemsEl.innerHTML = pins.map(pin => `
-          <div class="watchlist-item">
-            <div class="watchlist-item-info">
-              <div class="watchlist-vertical">${escHtml(pin.vertical)}</div>
-              ${pin.label ? `<div class="watchlist-label">${escHtml(pin.label)}</div>` : ''}
-            </div>
-            <div class="flex items-center gap-2">
-              <button class="run-btn" style="font-size:.7rem;padding:.3rem .65rem" data-action="run-from-discover" data-workflow-name="${escHtml(pin.vertical)}">Analyze →</button>
-              <button class="unpin-btn" data-action="unpin" data-pin-id="${pin.id}">Unpin</button>
-            </div>
-          </div>
-        `).join('');
-
-        // Update pin badges on discover cards
+        // Update pin count badge and discover card badges
+        updatePinCountBadge();
         markPinnedDiscoverCards();
 
       } catch(err) {
@@ -1086,6 +1231,18 @@
             break;
           case 'unpin':
             if (actionEl.dataset.pinId) unpin(parseInt(actionEl.dataset.pinId, 10));
+            break;
+          case 'unpin-from-pins-tab':
+            if (actionEl.dataset.pinId) unpinFromPinsTab(parseInt(actionEl.dataset.pinId, 10), actionEl);
+            break;
+          case 'show-analyze-tab':
+            showAnalyzeTab();
+            break;
+          case 'show-pins-tab':
+            showPinsTab();
+            break;
+          case 'refresh-pins-tab':
+            refreshPinsTab();
             break;
           case 'submit-email-gate':
             submitEmailGate();
