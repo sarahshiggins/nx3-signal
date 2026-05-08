@@ -144,7 +144,7 @@ Respond ONLY with valid JSON (no markdown, no extra text) matching this exact sc
     "biggestRisk": string
   }},
   "recentNews": [
-    {{ "headline": string, "source": string, "date": string (YYYY-MM-DD or "recent"), "relevance": string (1 sentence on why this matters for AI opportunity) }}
+    {{ "headline": string, "source": string, "date": string (YYYY-MM-DD or "recent"), "url": string (direct URL to the article), "relevance": string (1 sentence on why this matters for AI opportunity) }}
   ],
   "comparable": {{
     "vertical": string,
