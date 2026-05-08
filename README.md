@@ -82,29 +82,13 @@ The 5 criteria map directly to Nexus3's investment thesis:
 | Layer | Technology |
 |---|---|
 | **Backend** | Python / Flask on Railway (auto-deploys from GitHub) |
-| **AI Engine** | Perplexity `sonar` model — live web-searched analysis with real-time data |
-| **Email** | Resend API with verified `nexus3cap.com` domain |
+| **AI Engine** | Perplexity sonar model — live web-searched analysis with real-time data |
+| **Email** | Resend API with verified nexus3cap.com domain |
 | **Database** | SQLite — pins, analysis history, change tracking |
 | **Frontend** | Single-page app with Tailwind CSS, Bebas Neue + Inter + JetBrains Mono |
 | **Alerts** | Railway cron job runs daily comparison logic at 8 AM CT |
 | **Hosting** | Railway (backend + cron) |
 | **Source** | GitHub with auto-deploy on push |
-
-Runs for under $5/month total.
-
----
-
-## Architecture
-
-```
-User → Railway (Flask) → Perplexity API (live analysis)
-                       → SQLite (pins, history)
-                       → Resend (confirmation + alert emails)
-                       
-Railway Cron (8 AM CT) → /api/send-alert
-                       → Compare today vs yesterday
-                       → Email only if changes detected
-```
 
 ---
 
@@ -112,24 +96,16 @@ Railway Cron (8 AM CT) → /api/send-alert
 
 | Method | Endpoint | Description |
 |---|---|---|
-| `GET` | `/` | Serve frontend |
-| `GET` | `/health` | Health check |
-| `POST` | `/api/analyze` | Run market analysis (with auto-retry) |
-| `POST` | `/api/pin` | Pin a vertical (with duplicate prevention) |
-| `GET` | `/api/pins` | Get user's pins |
-| `GET` | `/api/pins/check` | Check if a vertical is pinned |
-| `DELETE` | `/api/pins/<id>` | Remove a pin |
-| `GET` | `/api/unpin?token=` | One-click unpin from email |
-| `GET` | `/api/history` | Analysis history for trend tracking |
-| `POST` | `/api/send-alert` | Trigger daily change detection scan |
-
----
-
-## Notes
-
-- Analysis quality depends on Perplexity's `sonar` model's web access. Results are best for established verticals with substantial public data.
-- This is a research accelerator, not a replacement for human diligence. Use it to generate hypotheses and identify questions, not to make final investment decisions.
-- The robust JSON parser handles malformed AI responses with a 5-step repair pipeline and automatic retry.
+| GET | / | Serve frontend |
+| GET | /health | Health check |
+| POST | /api/analyze | Run market analysis (with auto-retry) |
+| POST | /api/pin | Pin a vertical (with duplicate prevention) |
+| GET | /api/pins | Get user's pins |
+| GET | /api/pins/check | Check if a vertical is pinned |
+| DELETE | /api/pins/\<id\> | Remove a pin |
+| GET | /api/unpin?token= | One-click unpin from email |
+| GET | /api/history | Analysis history for trend tracking |
+| POST | /api/send-alert | Trigger daily change detection scan |
 
 ---
 
