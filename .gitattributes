@@ -1,0 +1,3 @@
+# Tell GitHub linguist to treat HTML as non-language (so Python shows as primary)
+*.html linguist-vendored
+templates/*.html linguist-vendored
