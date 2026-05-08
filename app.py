@@ -5,9 +5,11 @@ Nexus3 Capital | Vertical Market Intelligence Platform
 Routes:
   GET  /                     → Serve frontend
   POST /api/analyze          → Perplexity-powered market analysis
-  POST /api/pin              → Pin a vertical (SQLite)
+  POST /api/pin              → Pin a vertical (SQLite, deduped)
   GET  /api/pins             → Get pins by email
+  GET  /api/pins/check       → Check if email+vertical is pinned
   DELETE /api/pins/<pin_id>  → Remove a pin
+  GET  /api/unpin?token=     → Unpin via email link (token auth)
   POST /api/send-alert       → Send weekly digest emails (cron target)
   GET  /health               → Railway health check
 """
@@ -17,6 +19,7 @@ import json
 import sqlite3
 import datetime
 import traceback
+import secrets
 from functools import wraps
 
 import requests
@@ -66,6 +69,7 @@ def init_db():
                 vertical TEXT NOT NULL,
                 email TEXT NOT NULL,
                 label TEXT,
+                unpin_token TEXT,
                 created_at DATETIME DEFAULT CURRENT_TIMESTAMP
             );
 
@@ -77,6 +81,12 @@ def init_db():
                 created_at DATETIME DEFAULT CURRENT_TIMESTAMP
             );
         """)
+        # Add unpin_token column to existing databases that don't have it
+        try:
+            conn.execute("ALTER TABLE pins ADD COLUMN unpin_token TEXT")
+            conn.commit()
+        except sqlite3.OperationalError:
+            pass  # Column already exists
         conn.commit()
 
 
@@ -484,7 +494,7 @@ def analyze():
 @app.route("/api/pin", methods=["POST"])
 def pin_vertical():
     """
-    Pin a vertical for a user.
+    Pin a vertical for a user. Returns existing pin if already pinned.
 
     Request body:
         {
@@ -502,13 +512,121 @@ def pin_vertical():
         return jsonify({"error": "vertical and email are required"}), 400
 
     db = get_db()
+
+    # Check for existing pin (duplicate prevention)
+    existing = db.execute(
+        "SELECT id FROM pins WHERE email = ? AND vertical = ?",
+        (email, vertical),
+    ).fetchone()
+
+    if existing:
+        return jsonify({"status": "already_pinned", "pin_id": existing["id"]})
+
+    # Generate unpin token for email-based unpin links
+    unpin_token = secrets.token_urlsafe(16)
+
     cursor = db.execute(
-        "INSERT INTO pins (vertical, email, label) VALUES (?, ?, ?)",
-        (vertical, email, label),
+        "INSERT INTO pins (vertical, email, label, unpin_token) VALUES (?, ?, ?, ?)",
+        (vertical, email, label, unpin_token),
     )
     db.commit()
 
-    return jsonify({"success": True, "pin_id": cursor.lastrowid})
+    pin_id = cursor.lastrowid
+
+    # Send confirmation email (non-blocking — don't let failures affect the response)
+    try:
+        display_name = label or vertical
+        unpin_url = f"{request.host_url}api/unpin?token={unpin_token}"
+        confirm_html = f"""<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/></head>
+<body style="margin:0;padding:0;background:#0a0a0a;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif">
+  <div style="max-width:560px;margin:0 auto;padding:32px 16px">
+    <p style="margin:0 0 4px 0;font-size:11px;letter-spacing:0.2em;color:#DC2626;font-family:monospace;text-transform:uppercase">Nexus3 Capital</p>
+    <h1 style="margin:0 0 24px 0;font-size:28px;font-weight:700;color:#F5F0E8;letter-spacing:0.04em">NX3 Signal</h1>
+    <div style="padding:20px 24px;background:#111111;border-radius:8px;border:1px solid #222222;border-left:3px solid #DC2626">
+      <p style="margin:0 0 12px 0;font-size:16px;color:#F5F0E8;font-weight:600">📌 You pinned {display_name}</p>
+      <p style="margin:0 0 16px 0;font-size:14px;color:#a09890;line-height:1.6">You'll receive weekly analysis updates for this vertical as part of your NX3 Signal digest.</p>
+      <p style="margin:0;font-size:13px;color:#4a4540;line-height:1.6">Changed your mind? <a href="{unpin_url}" style="color:#DC2626;text-decoration:none">Unpin this vertical</a>.</p>
+    </div>
+    <p style="margin:24px 0 0;font-size:11px;color:#4a4540;font-family:monospace">NX3 Signal · Nexus3 Capital · nexus3cap.com</p>
+  </div>
+</body>
+</html>"""
+        send_resend_email(email, f"NX3 Signal \u2014 You pinned {display_name}", confirm_html)
+    except Exception as e:
+        app.logger.error(f"Failed to send pin confirmation email to {email}: {e}")
+
+    return jsonify({"success": True, "pin_id": pin_id})
+
+
+@app.route("/api/pins/check", methods=["GET"])
+def check_pin():
+    """
+    Check if a user has pinned a specific vertical.
+
+    Query params:
+        email=tim@nexus3cap.com
+        vertical=workers comp insurance
+    """
+    email = (request.args.get("email") or "").strip()
+    vertical = (request.args.get("vertical") or "").strip()
+
+    if not email or not vertical:
+        return jsonify({"error": "email and vertical query parameters are required"}), 400
+
+    db = get_db()
+    row = db.execute(
+        "SELECT id FROM pins WHERE email = ? AND vertical = ?",
+        (email, vertical),
+    ).fetchone()
+
+    if row:
+        return jsonify({"pinned": True, "pin_id": row["id"]})
+    return jsonify({"pinned": False, "pin_id": None})
+
+
+@app.route("/api/unpin", methods=["GET"])
+def unpin_via_token():
+    """
+    Unpin a vertical via a unique token (for email unpin links).
+    No auth required — the token serves as proof of ownership.
+
+    Query params:
+        token=<unpin_token>
+    """
+    token = (request.args.get("token") or "").strip()
+
+    if not token:
+        return "<html><body style='background:#0a0a0a;color:#F5F0E8;font-family:sans-serif;display:flex;justify-content:center;align-items:center;height:100vh;margin:0'><div style='text-align:center'><h1>Invalid Link</h1><p style='color:#a09890'>No unpin token provided.</p></div></div></body></html>", 400
+
+    db = get_db()
+    row = db.execute(
+        "SELECT id, vertical, email FROM pins WHERE unpin_token = ?",
+        (token,),
+    ).fetchone()
+
+    if not row:
+        return "<html><body style='background:#0a0a0a;color:#F5F0E8;font-family:sans-serif;display:flex;justify-content:center;align-items:center;height:100vh;margin:0'><div style='text-align:center'><h1>Not Found</h1><p style='color:#a09890'>This unpin link is invalid or has already been used.</p></div></div></body></html>", 404
+
+    vertical = row["vertical"]
+    db.execute("DELETE FROM pins WHERE id = ?", (row["id"],))
+    db.commit()
+
+    return f"""<html>
+<head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><title>Unpinned — NX3 Signal</title></head>
+<body style="background:#0a0a0a;color:#F5F0E8;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;display:flex;justify-content:center;align-items:center;height:100vh;margin:0">
+  <div style="text-align:center;max-width:480px;padding:32px">
+    <p style="font-size:11px;letter-spacing:0.2em;color:#DC2626;font-family:monospace;text-transform:uppercase;margin:0 0 8px 0">Nexus3 Capital</p>
+    <h1 style="font-size:28px;font-weight:700;margin:0 0 24px 0">Unpinned Successfully</h1>
+    <div style="padding:20px 24px;background:#111111;border-radius:8px;border:1px solid #222222">
+      <p style="margin:0 0 8px 0;font-size:16px;color:#F5F0E8">You've unpinned <strong>{vertical}</strong>.</p>
+      <p style="margin:0;font-size:14px;color:#a09890">You'll no longer receive weekly updates for this vertical.</p>
+    </div>
+    <p style="margin:24px 0 0;font-size:13px;color:#4a4540"><a href="/" style="color:#DC2626;text-decoration:none">Back to NX3 Signal →</a></p>
+  </div>
+</body>
+</html>"""
 
 
 @app.route("/api/pins", methods=["GET"])
