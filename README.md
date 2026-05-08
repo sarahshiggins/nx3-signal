@@ -1,47 +1,53 @@
 # NX3 Signal — Vertical Market Intelligence
 
-A professional internal research tool built for Nexus3 to evaluate vertical markets against the Nexus3 AI investment thesis.
+A real-time market intelligence platform built by Nexus3 to evaluate vertical markets against the Nexus3 AI investment thesis, track competitive changes, and surface daily market signals.
 
 ---
 
-## What It Is
+## What It Does
 
-NX3 Signal is a browser-based market research tool that takes any industry vertical as input and generates a structured intelligence report in seconds. It scores each vertical against Nexus3's 5-criterion investment thesis, maps the competitive landscape with real incumbents and AI-native players, and — for verticals that pass the bar — generates a venture outline using Nexus3's operating playbook.
+NX3 Signal is a full-stack market research platform that takes any industry vertical as input and generates a structured intelligence report in seconds. It scores each vertical against Nexus3's 5-criterion investment thesis, maps the competitive landscape, surfaces recent news and funding activity, and — for verticals that pass the bar — generates a venture outline using Nexus3's operating playbook.
 
-Think of it as an AI analyst that's been pre-briefed on exactly how Nexus3 evaluates opportunities.
+Pin the verticals you care about, and NX3 Signal monitors them daily. If something changes — a new AI competitor enters the space, a thesis score shifts, or a notable funding round hits — you get an email. If nothing changed, it stays quiet.
 
 ---
 
 ## Why It Was Built
 
-Nexus3 builds, invests in, and acquires generative AI vertical SaaS companies. Evaluating new verticals quickly — before committing to deeper diligence — is a recurring need. NX3 Signal automates the first pass: market sizing, competitive scanning, thesis alignment scoring, and initial venture hypothesis, all in a repeatable, structured format.
+Nexus3 builds, invests in, and acquires generative AI vertical SaaS companies. Evaluating new verticals quickly — before committing to deeper diligence — is a recurring need. NX3 Signal automates the first pass: market sizing, competitive scanning, thesis alignment scoring, news monitoring, and initial venture hypothesis, all in a repeatable, structured format that gets smarter over time as it tracks changes.
 
 ---
 
-## How to Use It
+## Features
 
-1. **Get a Perplexity API key** → [perplexity.ai/settings/api](https://www.perplexity.ai/settings/api) (free tier available)
-2. **Open `index.html`** in any modern browser (Chrome, Firefox, Safari, Edge)
-3. **Click the ⚙ gear icon** in the top right to open Settings
-4. **Paste your API key** and click Save
-5. **Type a market vertical** in the search box (e.g. "Veterinary Practice Management", "Construction Permitting", "Freight Brokerage")
-6. **Click "RUN ANALYSIS"** — the report generates in ~10–15 seconds
+### Discover
+Browse 18 curated verticals — Healthcare, Legal, Insurance, Energy, Pharma, Telecom, Mining, and more — broken into 85+ specific workflow segments. Each segment includes market size estimates and AI penetration scores.
 
-Your API key is stored in `localStorage` and never leaves your browser. No backend, no server, no data collection.
+### Analyze
+Type in any vertical, workflow, or industry segment (broad or specific) and get a live AI-powered report:
+- **Market Overview** — description, TAM, primary workflow being replaced
+- **Competitive Landscape** — traditional incumbents, AI-native competitors, whitespace
+- **Recent News & Signals** — 3-5 current articles with clickable links to sources
+- **Nexus3 Fit Scores** — 5 criteria scored 1-5 with rationale and overall verdict
+- **Venture Playbook** — painkiller, beachhead, moat, revenue model, year 1 plan, biggest risk
+- **Comparable** — which Nexus3 Tier 1 vertical this most resembles
 
----
+### Pin & Track
+Pin verticals to your watchlist. See pin status across the app — on analysis results, discover cards, and the dedicated My Pins tab. Duplicate pins are prevented automatically.
 
-## Report Structure
+### Daily Change Detection
+Every morning at 8 AM CT, NX3 Signal re-analyzes all pinned verticals and compares against the previous day's data. You only get an email if something meaningful changed:
+- Thesis score shifted by 1+ points
+- Overall verdict changed (e.g., POSSIBLE FIT → STRONG FIT)
+- New AI-native or traditional competitor appeared
+- Market size estimate changed significantly
+- Notable news or funding activity surfaced
 
-Each analysis returns five sections:
+No changes = no email. No spam.
 
-| Section | What You Get |
-|---|---|
-| **Market Overview** | 2-3 sentence description, estimated market size, primary workflow being replaced |
-| **Competitive Landscape** | 3-5 traditional incumbents, 2-3 AI-native competitors, identified whitespace |
-| **Nexus3 Fit Scores** | 5 criteria scored 1-5 with rationale, overall verdict (STRONG / POSSIBLE / WEAK FIT) |
-| **If We Did It** | Full venture outline (Painkiller, Beachhead, Moat, Revenue Model, Year 1, Biggest Risk) — only appears for POSSIBLE or STRONG FIT |
-| **Comparable Ventures** | Which Nexus3 Tier 1 vertical this most resembles and why |
+### Email Alerts
+- **Pin confirmation** — instant branded email when you pin a vertical, with one-click unpin link
+- **Change reports** — daily digest of what moved, with color-coded score arrows and news highlights
 
 ---
 
@@ -49,35 +55,73 @@ Each analysis returns five sections:
 
 The 5 criteria map directly to Nexus3's investment thesis:
 
-1. **Market Size & Manual Labor** — Is the market >$10B? Are workflows still manual/paper-heavy?
-2. **Regulatory Moat** — Heavily regulated? Domain expertise a real barrier to generic AI replication?
-3. **Process Replacement** — Can AI replace entire workflows, not just assist? Is there a labor budget to capture?
-4. **Capital Efficiency** — Path to enterprise contracts? Recurring high-margin revenue potential?
-5. **Layer 4 Moat** — Deep integrations (EHR, SCADA, court APIs, core systems) that create switching costs once built?
+| # | Criterion | What It Measures |
+|---|---|---|
+| 1 | **Market Size & Manual Labor** | Is the market >$10B? Are workflows still manual/paper-heavy? |
+| 2 | **Regulatory Moat** | Heavily regulated? Domain expertise a real barrier? |
+| 3 | **Process Replacement** | Can AI replace entire workflows, not just assist? |
+| 4 | **Capital Efficiency** | Path to enterprise contracts? Recurring high-margin revenue? |
+| 5 | **Layer 4 Moat** | Deep integrations (EHR, SCADA, core systems, filing APIs)? |
 
-**Verdict thresholds:** STRONG FIT (avg ≥ 4.0) / POSSIBLE FIT (avg 3.0–3.9) / WEAK FIT (avg < 3.0)
+**Verdict thresholds:** STRONG FIT (avg ≥ 4.0) · POSSIBLE FIT (avg 3.0–3.9) · WEAK FIT (avg < 3.0)
 
 ---
 
-## Getting Your API Key
+## How to Use It
 
-1. Go to [perplexity.ai/settings/api](https://www.perplexity.ai/settings/api)
-2. Sign in or create a free account
-3. Click **"Generate"** to create a new API key
-4. Copy and paste it into the NX3 Signal settings panel
-
-The free tier includes credits sufficient for dozens of analyses.
+1. Open [nx3-signal-production.up.railway.app](https://nx3-signal-production.up.railway.app)
+2. Enter your email (first time only — stored in browser)
+3. Browse verticals on the Discover tab, or type anything into the Analyze tab
+4. Pin verticals you want to track
+5. Get daily change detection emails automatically
 
 ---
 
 ## Tech Stack
 
-- **Single-file app** — `index.html`, no build step, no dependencies to install
-- **Tailwind CSS** — utility-first styling via CDN
-- **Google Fonts** — Bebas Neue (headers) + Inter (body) + JetBrains Mono (labels/code)
-- **Perplexity AI** — `sonar` model for live web-grounded market research
-- **Vanilla JS** — zero frameworks, runs entirely in-browser
-- **localStorage** — API key persistence, client-side only
+| Layer | Technology |
+|---|---|
+| **Backend** | Python / Flask on Railway (auto-deploys from GitHub) |
+| **AI Engine** | Perplexity `sonar` model — live web-searched analysis with real-time data |
+| **Email** | Resend API with verified `nexus3cap.com` domain |
+| **Database** | SQLite — pins, analysis history, change tracking |
+| **Frontend** | Single-page app with Tailwind CSS, Bebas Neue + Inter + JetBrains Mono |
+| **Alerts** | Railway cron job runs daily comparison logic at 8 AM CT |
+| **Hosting** | Railway (backend + cron) |
+| **Source** | GitHub with auto-deploy on push |
+
+Runs for under $5/month total.
+
+---
+
+## Architecture
+
+```
+User → Railway (Flask) → Perplexity API (live analysis)
+                       → SQLite (pins, history)
+                       → Resend (confirmation + alert emails)
+                       
+Railway Cron (8 AM CT) → /api/send-alert
+                       → Compare today vs yesterday
+                       → Email only if changes detected
+```
+
+---
+
+## API Endpoints
+
+| Method | Endpoint | Description |
+|---|---|---|
+| `GET` | `/` | Serve frontend |
+| `GET` | `/health` | Health check |
+| `POST` | `/api/analyze` | Run market analysis (with auto-retry) |
+| `POST` | `/api/pin` | Pin a vertical (with duplicate prevention) |
+| `GET` | `/api/pins` | Get user's pins |
+| `GET` | `/api/pins/check` | Check if a vertical is pinned |
+| `DELETE` | `/api/pins/<id>` | Remove a pin |
+| `GET` | `/api/unpin?token=` | One-click unpin from email |
+| `GET` | `/api/history` | Analysis history for trend tracking |
+| `POST` | `/api/send-alert` | Trigger daily change detection scan |
 
 ---
 
@@ -85,9 +129,8 @@ The free tier includes credits sufficient for dozens of analyses.
 
 - Analysis quality depends on Perplexity's `sonar` model's web access. Results are best for established verticals with substantial public data.
 - This is a research accelerator, not a replacement for human diligence. Use it to generate hypotheses and identify questions, not to make final investment decisions.
-- The `sonar` model is instructed to return structured JSON; edge cases with unusual verticals may require a retry if parsing fails.
+- The robust JSON parser handles malformed AI responses with a 5-step repair pipeline and automatic retry.
 
 ---
 
 *Built by Sarah Higgins, Nexus3.*
-
