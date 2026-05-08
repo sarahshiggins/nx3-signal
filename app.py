@@ -456,7 +456,19 @@ def analyze():
 
     try:
         prompt = build_analysis_prompt(vertical)
-        result = call_perplexity(prompt)
+        # Retry up to 2 times if Perplexity returns unparseable JSON
+        last_err = None
+        result = None
+        for attempt in range(2):
+            try:
+                result = call_perplexity(prompt)
+                break
+            except (ValueError, json.JSONDecodeError) as parse_err:
+                last_err = parse_err
+                app.logger.warning(f"Perplexity parse failed (attempt {attempt+1}): {parse_err}")
+                continue
+        if result is None:
+            raise last_err or ValueError("Analysis failed after retries")
 
         # Optionally cache analysis to DB
         try:
