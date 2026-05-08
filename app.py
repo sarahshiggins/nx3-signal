@@ -1,6 +1,6 @@
 """
 NX3 Signal — Flask Backend
-Nexus3 Capital | Vertical Market Intelligence Platform
+Nexus3 | Vertical Market Intelligence Platform
 
 Routes:
   GET  /                     → Serve frontend
@@ -106,7 +106,7 @@ def init_db():
 
 def build_analysis_prompt(vertical: str) -> str:
     """Build the Nexus3 thesis-scoring prompt for a given vertical."""
-    return f"""You are analyzing the "{vertical}" market vertical for Nexus3 Capital, an AI venture studio.
+    return f"""You are analyzing the "{vertical}" market vertical for Nexus3, an AI venture studio.
 
 Nexus3's Tier 1 portfolio verticals for context: Energy/Utilities (OT/SCADA/FERC/PUC regulatory), Legal (document-heavy, LangGraph segments), Healthcare RCM (denials/appeals, payer integrations), Insurance (claims adjudication, carrier core systems).
 
@@ -166,7 +166,7 @@ Be specific, data-driven, and honest. Use real company names for competitors."""
 
 def build_alert_prompt(vertical: str) -> str:
     """Build a concise recent-news prompt for weekly alert digests."""
-    return f"""You are a market intelligence analyst for Nexus3 Capital.
+    return f"""You are a market intelligence analyst for Nexus3.
 
 Search for the most recent news, developments, and signals in the "{vertical}" market vertical from the past 7 days.
 
@@ -203,7 +203,7 @@ def call_perplexity(prompt: str, system_msg: str = None) -> dict:
 
     if system_msg is None:
         system_msg = (
-            "You are a market research analyst for Nexus3 Capital. "
+            "You are a market research analyst for Nexus3. "
             "Always respond with valid JSON matching the exact schema provided. "
             "No markdown, no code blocks, pure JSON only."
         )
@@ -393,7 +393,7 @@ def build_alert_email_html(email: str, verticals_data: list[dict]) -> str:
     <!-- Header -->
     <div style="padding:32px 0 24px;border-bottom:1px solid #222222;margin-bottom:32px">
       <p style="margin:0 0 4px 0;font-size:11px;letter-spacing:0.2em;color:#DC2626;font-family:monospace;text-transform:uppercase">
-        Nexus3 Capital
+        Nexus3
       </p>
       <h1 style="margin:0;font-size:36px;font-weight:700;color:#F5F0E8;letter-spacing:0.04em">
         NX3 Signal
@@ -419,7 +419,7 @@ def build_alert_email_html(email: str, verticals_data: list[dict]) -> str:
         To unsubscribe, reply to this email with "unsubscribe" or remove your pins from the app.
       </p>
       <p style="margin:12px 0 0;font-size:11px;color:#4a4540;font-family:monospace">
-        NX3 Signal · Nexus3 Capital · nexus3cap.com
+        NX3 Signal · Nexus3 · nexus3cap.com
       </p>
     </div>
 
@@ -603,7 +603,7 @@ def build_change_report_email(email: str, changes: list) -> str:
     <!-- Header -->
     <div style="padding:32px 0 24px;border-bottom:1px solid #222222;margin-bottom:32px">
       <p style="margin:0 0 4px 0;font-size:11px;letter-spacing:0.2em;color:#DC2626;font-family:monospace;text-transform:uppercase">
-        Nexus3 Capital
+        Nexus3
       </p>
       <h1 style="margin:0;font-size:36px;font-weight:700;color:#F5F0E8;letter-spacing:0.04em">
         NX3 Signal
@@ -624,11 +624,11 @@ def build_change_report_email(email: str, changes: list) -> str:
     <!-- Footer -->
     <div style="border-top:1px solid #222222;padding-top:24px;margin-top:32px">
       <p style="margin:0;font-size:12px;color:#4a4540;line-height:1.6">
-        NX3 Signal by Nexus3 Capital · Manage pins at
+        NX3 Signal by Nexus3 · Manage pins at
         <a href="https://signal.nexus3cap.com" style="color:#DC2626;text-decoration:none">signal.nexus3cap.com</a>
       </p>
       <p style="margin:12px 0 0;font-size:11px;color:#4a4540;font-family:monospace">
-        NX3 Signal · Nexus3 Capital · nexus3cap.com
+        NX3 Signal · Nexus3 · nexus3cap.com
       </p>
     </div>
 
@@ -791,14 +791,14 @@ def pin_vertical():
 <head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/></head>
 <body style="margin:0;padding:0;background:#0a0a0a;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif">
   <div style="max-width:560px;margin:0 auto;padding:32px 16px">
-    <p style="margin:0 0 4px 0;font-size:11px;letter-spacing:0.2em;color:#DC2626;font-family:monospace;text-transform:uppercase">Nexus3 Capital</p>
+    <p style="margin:0 0 4px 0;font-size:11px;letter-spacing:0.2em;color:#DC2626;font-family:monospace;text-transform:uppercase">Nexus3</p>
     <h1 style="margin:0 0 24px 0;font-size:28px;font-weight:700;color:#F5F0E8;letter-spacing:0.04em">NX3 Signal</h1>
     <div style="padding:20px 24px;background:#111111;border-radius:8px;border:1px solid #222222;border-left:3px solid #DC2626">
       <p style="margin:0 0 12px 0;font-size:16px;color:#F5F0E8;font-weight:600">📌 You pinned {display_name}</p>
       <p style="margin:0 0 16px 0;font-size:14px;color:#a09890;line-height:1.6">You'll receive weekly analysis updates for this vertical as part of your NX3 Signal digest.</p>
       <p style="margin:0;font-size:13px;color:#4a4540;line-height:1.6">Changed your mind? <a href="{unpin_url}" style="color:#DC2626;text-decoration:none">Unpin this vertical</a>.</p>
     </div>
-    <p style="margin:24px 0 0;font-size:11px;color:#4a4540;font-family:monospace">NX3 Signal · Nexus3 Capital · nexus3cap.com</p>
+    <p style="margin:24px 0 0;font-size:11px;color:#4a4540;font-family:monospace">NX3 Signal · Nexus3 · nexus3cap.com</p>
   </div>
 </body>
 </html>"""
@@ -866,7 +866,7 @@ def unpin_via_token():
 <head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><title>Unpinned — NX3 Signal</title></head>
 <body style="background:#0a0a0a;color:#F5F0E8;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;display:flex;justify-content:center;align-items:center;height:100vh;margin:0">
   <div style="text-align:center;max-width:480px;padding:32px">
-    <p style="font-size:11px;letter-spacing:0.2em;color:#DC2626;font-family:monospace;text-transform:uppercase;margin:0 0 8px 0">Nexus3 Capital</p>
+    <p style="font-size:11px;letter-spacing:0.2em;color:#DC2626;font-family:monospace;text-transform:uppercase;margin:0 0 8px 0">Nexus3</p>
     <h1 style="font-size:28px;font-weight:700;margin:0 0 24px 0">Unpinned Successfully</h1>
     <div style="padding:20px 24px;background:#111111;border-radius:8px;border:1px solid #222222">
       <p style="margin:0 0 8px 0;font-size:16px;color:#F5F0E8">You've unpinned <strong>{vertical}</strong>.</p>
