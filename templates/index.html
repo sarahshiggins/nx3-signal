@@ -120,6 +120,8 @@
     .watchlist-label { font-size:.7rem; color:var(--text-muted); font-family:'JetBrains Mono',monospace; }
     .unpin-btn { font-size:.7rem; font-family:'JetBrains Mono',monospace; color:var(--text-muted); background:transparent; border:1px solid var(--border); padding:.25rem .6rem; border-radius:4px; cursor:pointer; transition:border-color .2s,color .2s; white-space:nowrap; }
     .unpin-btn:hover { border-color:var(--accent); color:#ef4444; }
+    .example-chip { font-family:'JetBrains Mono',monospace; font-size:.72rem; color:var(--text-dim); background:var(--surface); border:1px solid var(--border); padding:.4rem .85rem; border-radius:20px; cursor:pointer; transition:border-color .2s,color .2s,background .2s; white-space:nowrap; }
+    .example-chip:hover { border-color:var(--accent); color:var(--text); background:var(--accent-glow); }
     /* Email gate modal */
     .email-gate-overlay { position:fixed; inset:0; background:rgba(0,0,0,.92); backdrop-filter:blur(8px); display:flex; align-items:center; justify-content:center; z-index:200; padding:1rem; }
     .email-gate-box { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:2.5rem; width:100%; max-width:420px; text-align:center; }
@@ -244,6 +246,20 @@
           <button id="analyzeBtn" data-action="run-analysis" class="btn-analyze px-6 py-3 rounded-lg">Run Analysis</button>
         </div>
         <p class="text-xs text-[var(--text-muted)] mt-2 mono">Scored against the Nexus3 investment thesis · Powered by Perplexity sonar</p>
+      </div>
+
+      <!-- Analyze instructions + example chips -->
+      <div id="analyzeInstructions" class="mb-10" style="text-align:center;">
+        <p class="text-sm text-[var(--text-dim)] mb-4" style="max-width:540px;margin:0 auto;line-height:1.7;">
+          Enter any market vertical, workflow, or industry segment &mdash; broad (<span class="text-[var(--text)]">Healthcare</span>) or specific (<span class="text-[var(--text)]">Dental Revenue Cycle Management</span>). NX3 Signal scores it against the Nexus3 investment thesis and maps competitors, whitespace, and a venture outline.
+        </p>
+        <div class="flex flex-wrap justify-center gap-2 mt-4">
+          <button class="example-chip" data-action="run-example" data-example="Workers Comp Claims">Workers' Comp Claims</button>
+          <button class="example-chip" data-action="run-example" data-example="Municipal Permitting">Municipal Permitting</button>
+          <button class="example-chip" data-action="run-example" data-example="Immigration Law">Immigration Law</button>
+          <button class="example-chip" data-action="run-example" data-example="Crop Insurance">Crop Insurance</button>
+          <button class="example-chip" data-action="run-example" data-example="Commercial Lending">Commercial Lending</button>
+        </div>
       </div>
 
       <div id="loadingState" style="display:none" class="fade-in">
@@ -623,6 +639,8 @@
       document.getElementById('loadingState').style.display = 'block';
       document.getElementById('results').style.display = 'none';
       document.getElementById('errorState').style.display = 'none';
+      const instrEl = document.getElementById('analyzeInstructions');
+      if (instrEl) instrEl.style.display = 'none';
 
       const steps = [
         'Researching market size and dynamics...',
@@ -1216,6 +1234,14 @@
             break;
           case 'run-from-discover':
             if (actionEl.dataset.workflowName) runFromDiscover(actionEl.dataset.workflowName);
+            break;
+          case 'run-example':
+            if (actionEl.dataset.example) {
+              document.getElementById('verticalInput').value = actionEl.dataset.example;
+              const instrEl = document.getElementById('analyzeInstructions');
+              if (instrEl) instrEl.style.display = 'none';
+              runAnalysis();
+            }
             break;
           case 'close-workflow-panel':
             if (actionEl.dataset.verticalId) toggleWorkflows(actionEl.dataset.verticalId);
