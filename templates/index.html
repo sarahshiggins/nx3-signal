@@ -100,6 +100,16 @@
     .watchlist-label { font-size:.7rem; color:var(--text-muted); font-family:'JetBrains Mono',monospace; }
     .unpin-btn { font-size:.7rem; font-family:'JetBrains Mono',monospace; color:var(--text-muted); background:transparent; border:1px solid var(--border); padding:.25rem .6rem; border-radius:4px; cursor:pointer; transition:border-color .2s,color .2s; white-space:nowrap; }
     .unpin-btn:hover { border-color:var(--accent); color:#ef4444; }
+    /* Email gate modal */
+    .email-gate-overlay { position:fixed; inset:0; background:rgba(0,0,0,.92); backdrop-filter:blur(8px); display:flex; align-items:center; justify-content:center; z-index:200; padding:1rem; }
+    .email-gate-box { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:2.5rem; width:100%; max-width:420px; text-align:center; }
+    .email-gate-box .header-logo { font-size:2.5rem; margin-bottom:.25rem; }
+    .email-gate-box .accent-bar { margin:0 auto .75rem; }
+    .email-indicator { display:flex; align-items:center; gap:.5rem; font-family:'JetBrains Mono',monospace; font-size:.7rem; color:var(--text-muted); background:var(--surface); border:1px solid var(--border); padding:.35rem .7rem; border-radius:4px; cursor:pointer; transition:border-color .2s,color .2s; }
+    .email-indicator:hover { border-color:var(--accent); color:var(--text-dim); }
+    /* Pinned badge on discover cards */
+    .card-pin-badge { position:absolute; top:.6rem; right:.6rem; font-size:.65rem; background:rgba(34,197,94,.12); color:var(--green); border:1px solid rgba(34,197,94,.25); padding:.15rem .45rem; border-radius:3px; font-family:'JetBrains Mono',monospace; letter-spacing:.08em; display:flex; align-items:center; gap:.25rem; }
+    .vertical-card { position:relative; }
     /* DISCOVER */
     .discover-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1rem; }
     @media(max-width:900px){ .discover-grid{grid-template-columns:repeat(2,1fr)} }
@@ -141,6 +151,19 @@
 </head>
 <body>
 
+  <!-- -- Email Gate Modal --------------------------------------------------- -->
+  <div id="emailGateModal" class="email-gate-overlay" style="display:none">
+    <div class="email-gate-box">
+      <div class="header-logo">NX3 Signal</div>
+      <div class="accent-bar"></div>
+      <p class="mono text-xs text-[var(--text-dim)] tracking-widest uppercase mb-6">Vertical Market Intelligence</p>
+      <p class="text-sm text-[var(--text-dim)] mb-4">Enter your email to get started.</p>
+      <input id="gateEmailInput" type="email" class="modal-input" placeholder="you@company.com" autocomplete="email" />
+      <div id="gateEmailError" class="text-xs mb-3" style="color:#ef4444;display:none">Please enter a valid email address.</div>
+      <button data-action="submit-email-gate" class="btn-analyze w-full py-3 rounded-md text-sm">Get Started</button>
+    </div>
+  </div>
+
   <!-- -- Pin Modal ----------------------------------------------------------- -->
   <div id="pinModal" class="modal-overlay" style="display:none">
     <div class="modal-box">
@@ -175,6 +198,12 @@
           <div class="accent-bar"></div>
           <p class="mono text-xs text-[var(--text-dim)] tracking-widest uppercase">Vertical Market Intelligence</p>
         </div>
+      </div>
+      <div id="emailIndicator" style="display:none">
+        <button class="email-indicator" data-action="change-email" title="Change email">
+          <span id="emailIndicatorText"></span>
+          <span style="font-size:.6rem">✎</span>
+        </button>
       </div>
     </header>
 
@@ -266,6 +295,7 @@
     let currentData = null;
     let currentVertical = null;
     let activeVertical = null;
+    let userPinnedVerticals = new Set(); // track pinned vertical names (lowercase)
 
     // --- Vertical / Workflow Data ---------------------------------------------
     const VERTICALS = [
@@ -547,6 +577,52 @@
       document.getElementById('pinModal').style.display = 'flex';
     }
 
+    // --- Email Gate -----------------------------------------------------------
+    function checkEmailGate() {
+      const email = localStorage.getItem('nx3_user_email');
+      if (!email) {
+        document.getElementById('emailGateModal').style.display = 'flex';
+        setTimeout(() => document.getElementById('gateEmailInput').focus(), 100);
+        return false;
+      }
+      showEmailIndicator(email);
+      return true;
+    }
+
+    function submitEmailGate() {
+      const input = document.getElementById('gateEmailInput');
+      const errorEl = document.getElementById('gateEmailError');
+      const email = input.value.trim();
+      if (!email || !email.includes('@') || email.indexOf('@') === 0 || email.indexOf('@') === email.length - 1) {
+        errorEl.style.display = 'block';
+        input.focus();
+        return;
+      }
+      errorEl.style.display = 'none';
+      localStorage.setItem('nx3_user_email', email);
+      document.getElementById('emailGateModal').style.display = 'none';
+      showEmailIndicator(email);
+      // Now load watchlist and pin indicators with the email
+      refreshWatchlist();
+      markPinnedDiscoverCards();
+    }
+
+    function showEmailIndicator(email) {
+      const indicator = document.getElementById('emailIndicator');
+      const text = document.getElementById('emailIndicatorText');
+      text.textContent = email;
+      indicator.style.display = 'block';
+    }
+
+    function changeEmail() {
+      localStorage.removeItem('nx3_user_email');
+      document.getElementById('emailIndicator').style.display = 'none';
+      document.getElementById('gateEmailInput').value = '';
+      document.getElementById('gateEmailError').style.display = 'none';
+      document.getElementById('emailGateModal').style.display = 'flex';
+      setTimeout(() => document.getElementById('gateEmailInput').focus(), 100);
+    }
+
     function closePinModal() {
       document.getElementById('pinModal').style.display = 'none';
       pendingPinVertical = null;
@@ -582,12 +658,18 @@
         statusEl.style.color = '#22c55e';
         statusEl.style.display = 'block';
 
-        // Update pin button state in results
+        // Update pin button state in results immediately
         const pinBtn = document.getElementById('pinResultBtn');
         if (pinBtn) {
-          pinBtn.textContent = '✓ Pinned';
+          pinBtn.textContent = 'Pinned ✓';
           pinBtn.classList.add('pinned');
+          pinBtn.removeAttribute('data-action');
+          pinBtn.style.cursor = 'default';
         }
+
+        // Add to local pinned set immediately
+        userPinnedVerticals.add(vertical.toLowerCase());
+        markPinnedDiscoverCards();
 
         setTimeout(() => {
           closePinModal();
@@ -605,7 +687,20 @@
       try {
         const resp = await fetch(`/api/pins/${pinId}`, { method: 'DELETE' });
         if (!resp.ok) throw new Error('Failed to unpin');
-        refreshWatchlist();
+        // Refresh watchlist (which also updates discover card badges)
+        await refreshWatchlist();
+
+        // Also update pin button in analysis results if visible
+        const pinBtn = document.getElementById('pinResultBtn');
+        if (pinBtn && pinBtn.classList.contains('pinned')) {
+          const vertical = pinBtn.dataset.vertical;
+          if (vertical && !userPinnedVerticals.has(vertical.toLowerCase())) {
+            pinBtn.textContent = '📌 Pin this vertical';
+            pinBtn.classList.remove('pinned');
+            pinBtn.setAttribute('data-action', 'open-pin-modal');
+            pinBtn.style.cursor = 'pointer';
+          }
+        }
       } catch(err) {
         alert('Failed to unpin: ' + err.message);
       }
@@ -620,12 +715,17 @@
         if (!resp.ok) return;
         const pins = await resp.json();
 
+        // Update the pinned verticals set
+        userPinnedVerticals.clear();
+        pins.forEach(pin => userPinnedVerticals.add(pin.vertical.toLowerCase()));
+
         const section = document.getElementById('watchlistSection');
         const itemsEl = document.getElementById('watchlistItems');
         const countEl = document.getElementById('watchlistCount');
 
         if (!pins.length) {
           section.style.display = 'none';
+          markPinnedDiscoverCards();
           return;
         }
 
@@ -645,8 +745,55 @@
           </div>
         `).join('');
 
+        // Update pin badges on discover cards
+        markPinnedDiscoverCards();
+
       } catch(err) {
         console.warn('Watchlist refresh failed:', err);
+      }
+    }
+
+    // --- Pin Badges on Discover Cards ----------------------------------------
+    function markPinnedDiscoverCards() {
+      // Remove all existing badges first
+      document.querySelectorAll('.card-pin-badge').forEach(el => el.remove());
+
+      if (!userPinnedVerticals.size) return;
+
+      VERTICALS.forEach(v => {
+        const card = document.getElementById('vcard-' + v.id);
+        if (!card) return;
+        // Check if this vertical name matches any pinned vertical
+        if (userPinnedVerticals.has(v.name.toLowerCase())) {
+          const badge = document.createElement('div');
+          badge.className = 'card-pin-badge';
+          badge.innerHTML = '📌 Pinned';
+          card.appendChild(badge);
+        }
+      });
+    }
+
+    // --- Pin State Check for Analysis Results ---------------------------------
+    async function checkPinStateForResults(vertical) {
+      const email = localStorage.getItem('nx3_user_email');
+      if (!email || !vertical) return;
+
+      try {
+        const resp = await fetch(`/api/pins/check?email=${encodeURIComponent(email)}&vertical=${encodeURIComponent(vertical)}`);
+        if (!resp.ok) return;
+        const data = await resp.json();
+
+        const pinBtn = document.getElementById('pinResultBtn');
+        if (!pinBtn) return;
+
+        if (data.pinned) {
+          pinBtn.textContent = 'Pinned ✓';
+          pinBtn.classList.add('pinned');
+          pinBtn.removeAttribute('data-action');
+          pinBtn.style.cursor = 'default';
+        }
+      } catch(err) {
+        console.warn('Pin state check failed:', err);
       }
     }
 
@@ -855,6 +1002,9 @@
 
       document.getElementById('results').innerHTML = html;
       document.getElementById('results').scrollIntoView({ behavior:'smooth', block:'start' });
+
+      // Check if this vertical is already pinned
+      checkPinStateForResults(d.vertical || currentVertical);
     }
 
     function toggleVenture() {
@@ -872,8 +1022,15 @@
 
     // --- Init -----------------------------------------------------------------
     window.addEventListener('DOMContentLoaded', () => {
+      // Email gate check first
+      const hasEmail = checkEmailGate();
+
       renderDiscover();
-      refreshWatchlist();
+
+      // Only load pins if we have an email
+      if (hasEmail) {
+        refreshWatchlist(); // also calls markPinnedDiscoverCards after fetching
+      }
 
       // --- Global event delegation (replaces all inline onclick handlers) ---
       document.addEventListener('click', (e) => {
@@ -930,6 +1087,12 @@
           case 'unpin':
             if (actionEl.dataset.pinId) unpin(parseInt(actionEl.dataset.pinId, 10));
             break;
+          case 'submit-email-gate':
+            submitEmailGate();
+            break;
+          case 'change-email':
+            changeEmail();
+            break;
         }
       });
 
@@ -939,6 +1102,9 @@
       });
       document.getElementById('discoverInput').addEventListener('keydown', (e) => {
         if (e.key === 'Enter') runDiscoverAnalysis();
+      });
+      document.getElementById('gateEmailInput').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') submitEmailGate();
       });
     });
   </script>
