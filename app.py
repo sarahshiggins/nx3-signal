@@ -200,27 +200,94 @@ def call_perplexity(prompt: str, system_msg: str = None) -> dict:
 
     raw = resp.json().get("choices", [{}])[0].get("message", {}).get("content", "")
 
-    # Try parsing directly first
+    return robust_json_parse(raw)
+
+
+def robust_json_parse(raw: str) -> dict:
+    """Parse LLM JSON output with progressive repair for common issues."""
+    import re
+
+    text = raw.strip()
+
+    # Step 1: Strip markdown code fences
+    fence = re.search(r"```(?:json)?\s*([\s\S]*?)```", text)
+    if fence:
+        text = fence.group(1).strip()
+
+    # Step 2: Extract outermost JSON object
+    if not text.startswith("{"):
+        start = text.find("{")
+        if start == -1:
+            raise ValueError(f"No JSON object found in response. Raw: {raw[:300]}")
+        text = text[start:]
+
+    # Find matching closing brace
+    depth = 0
+    end = -1
+    for i, ch in enumerate(text):
+        if ch == "{":
+            depth += 1
+        elif ch == "}":
+            depth -= 1
+            if depth == 0:
+                end = i
+                break
+    if end != -1:
+        text = text[: end + 1]
+
+    # Step 3: Try direct parse
     try:
-        return json.loads(raw)
+        return json.loads(text)
     except json.JSONDecodeError:
         pass
 
-    # Strip markdown code fences if present
-    import re
-    match = re.search(r"```(?:json)?\s*([\s\S]*?)```", raw)
-    if match:
-        try:
-            return json.loads(match.group(1).strip())
-        except json.JSONDecodeError:
-            pass
+    # Step 4: Fix trailing commas
+    repaired = re.sub(r",\s*([}\]])", r"\1", text)
+    try:
+        return json.loads(repaired)
+    except json.JSONDecodeError:
+        pass
 
-    # Last resort: find the first {...} block
-    match = re.search(r"\{[\s\S]*\}", raw)
-    if match:
-        return json.loads(match.group(0))
+    # Step 5: Aggressive repair — fix unescaped quotes, newlines, tabs inside strings
+    result = []
+    in_string = False
+    escaped = False
+    for i, ch in enumerate(repaired):
+        if escaped:
+            result.append(ch)
+            escaped = False
+            continue
+        if ch == "\\":
+            result.append(ch)
+            escaped = True
+            continue
+        if ch == '"':
+            if not in_string:
+                in_string = True
+                result.append(ch)
+            else:
+                # Look ahead to decide if this closes the string
+                rest = repaired[i + 1 :].lstrip()
+                if not rest or rest[0] in ":,}]":
+                    in_string = False
+                    result.append(ch)
+                else:
+                    result.append('\\"')  # escape internal quote
+        else:
+            if in_string and ch == "\n":
+                result.append("\\n")
+            elif in_string and ch == "\r":
+                result.append("\\r")
+            elif in_string and ch == "\t":
+                result.append("\\t")
+            else:
+                result.append(ch)
 
-    raise ValueError(f"Could not parse Perplexity response as JSON. Raw: {raw[:300]}")
+    try:
+        return json.loads("".join(result))
+    except json.JSONDecodeError:
+        raise ValueError(f"Could not parse Perplexity response as JSON. Raw: {raw[:500]}")
+
 
 
 def send_resend_email(to_email: str, subject: str, html_body: str) -> bool:
