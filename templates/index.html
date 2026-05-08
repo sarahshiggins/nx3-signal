@@ -91,7 +91,9 @@
     @media(max-width:640px){ .search-row{flex-direction:column} .btn-analyze{width:100%;padding:.85rem} }
     /* News cards */
     .news-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 1rem 1.25rem; margin-bottom: .5rem; }
-    .news-headline { font-size: .9rem; font-weight: 500; color: var(--text); margin-bottom: .35rem; }
+    .news-headline { font-size: .9rem; font-weight: 500; color: var(--text); margin-bottom: .35rem; display: block; }
+    a.news-link { text-decoration: none; color: var(--text); transition: color .2s; }
+    a.news-link:hover { color: var(--accent); text-decoration: underline; }
     .news-meta { font-family: 'JetBrains Mono', monospace; font-size: .65rem; color: var(--text-muted); margin-bottom: .35rem; }
     .news-relevance { font-size: .8rem; color: var(--text-dim); line-height: 1.5; }
     /* Pins Tab */
@@ -1112,8 +1114,11 @@
       const hasNews = d.recentNews && d.recentNews.length > 0;
       const newsCards = hasNews ? d.recentNews.map(n => {
         const meta = n.source ? escHtml(n.source) + (n.date ? ' \u00b7 ' + escHtml(n.date) : '') : (n.date ? escHtml(n.date) : '');
+        const headlineHtml = n.url
+          ? '<a href="' + escHtml(n.url) + '" target="_blank" rel="noopener" class="news-headline news-link">' + escHtml(n.headline) + '</a>'
+          : '<div class="news-headline">' + escHtml(n.headline) + '</div>';
         return '<div class="news-card">'
-          + '<div class="news-headline">' + escHtml(n.headline) + '</div>'
+          + headlineHtml
           + (meta ? '<div class="news-meta">' + meta + '</div>' : '')
           + (n.relevance ? '<div class="news-relevance">' + escHtml(n.relevance) + '</div>' : '')
           + '</div>';
