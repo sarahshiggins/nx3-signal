@@ -347,7 +347,13 @@
       { id:'transportation', name:'Transportation & Logistics', desc:'DOT compliance, freight documentation, manual dispatch', interest:'MEDIUM', workflows:4 },
       { id:'agriculture', name:'Agriculture', desc:'Crop insurance, USDA compliance -- seasonal but regulated', interest:'LOWER', workflows:3 },
       { id:'education', name:'Education', desc:'IEP administration, grant management -- regulated, manual', interest:'LOWER', workflows:3 },
-      { id:'manufacturing', name:'Manufacturing', desc:'OSHA compliance, quality reporting, supply chain documentation', interest:'MEDIUM', workflows:4 }
+      { id:'manufacturing', name:'Manufacturing', desc:'OSHA compliance, quality reporting, supply chain documentation', interest:'MEDIUM', workflows:4 },
+      { id:'telecom', name:'Telecom & Cable', desc:'FCC compliance, billing disputes, network provisioning -- heavily manual and regulation-bound', interest:'MEDIUM', segments:5 },
+      { id:'pharma', name:'Pharma & Life Sciences', desc:'FDA submissions, clinical trial admin, adverse event reporting -- extreme regulatory burden', interest:'HIGH', segments:5 },
+      { id:'supplychain', name:'Supply Chain & Procurement', desc:'Vendor qualification, RFP management, customs compliance across multi-tier networks', interest:'MEDIUM', segments:5 },
+      { id:'hrworkforce', name:'HR & Workforce Compliance', desc:'I-9 verification, EEOC reporting, benefits admin, FMLA leave -- touches every US employer', interest:'MEDIUM', segments:5 },
+      { id:'hospitality', name:'Hospitality & Food Service', desc:'Health inspections, franchise compliance, liquor licensing, food safety for restaurants and hotels', interest:'LOWER', segments:5 },
+      { id:'mining', name:'Mining & Natural Resources', desc:'MSHA safety, environmental assessments, mineral rights reporting -- high-stakes regulatory environment', interest:'HIGH', segments:5 }
     ];
 
     const WORKFLOWS = {
@@ -432,6 +438,48 @@
         { name:'Supply Chain Compliance Documentation', desc:'Supplier audits, certifications', size:'$10B', ai:'LOW' },
         { name:'Product Recall Management', desc:'FDA/CPSC, manual tracking and reporting', size:'$5B', ai:'LOW' },
         { name:'Warranty Claims Processing', desc:'Manual adjudication, similar to insurance', size:'$6B', ai:'LOW' }
+      ],
+      telecom: [
+        { name:'Billing Dispute Resolution', desc:'Intake, classification, and resolution tracking for subscriber billing disputes across wireline and wireless carriers', size:'$5.4B', ai:'LOW' },
+        { name:'FCC Regulatory Filings', desc:'Spectrum licensing, CPNI reports, robocall mitigation, and Universal Service Fund contribution filings', size:'$1.2B', ai:'LOW' },
+        { name:'Network Capacity Planning', desc:'Demand forecasting, spectrum allocation modeling, and infrastructure planning for 5G rollout and fiber buildout', size:'$2.1B', ai:'MEDIUM' },
+        { name:'Subscriber Churn Management', desc:'Retention workflow orchestration, early-warning scoring, save-desk routing, and win-back campaigns', size:'$1.5B', ai:'MEDIUM' },
+        { name:'Tower & Cell Site Permitting', desc:'Zoning applications, NEPA/NHPA reviews, FAA filings, and municipal coordination for tower construction', size:'$800M', ai:'LOW' }
+      ],
+      pharma: [
+        { name:'FDA 510(k) & NDA Submissions', desc:'Document assembly, eCTD formatting, pre-submission management for FDA device and drug approval pathways', size:'$1.8B', ai:'LOW' },
+        { name:'Adverse Event Reporting (FAERS)', desc:'MedDRA coding, causality assessment, and CIOMS/MedWatch submission for individual case safety reports', size:'$1.1B', ai:'LOW' },
+        { name:'Clinical Trial Site Management', desc:'Site selection, enrollment tracking, monitoring visit scheduling, and protocol deviation management', size:'$930M', ai:'MEDIUM' },
+        { name:'Drug Labeling Compliance', desc:'Label content management, SPL formatting, NDC directory updates against approved prescribing information', size:'$500M', ai:'LOW' },
+        { name:'Pharmacovigilance & Signal Detection', desc:'Aggregate safety analysis, signal detection from spontaneous reports, PSUR/PBRER generation', size:'$4.8B', ai:'MEDIUM' }
+      ],
+      supplychain: [
+        { name:'Vendor Prequalification', desc:'Supplier onboarding with financial health screening, insurance verification, safety record checks', size:'$1.2B', ai:'LOW' },
+        { name:'RFP & Bid Management', desc:'Solicitation creation, bid distribution, response collection, scoring matrix automation, and award recommendation', size:'$1.8B', ai:'LOW' },
+        { name:'Customs & Trade Compliance', desc:'HTS classification, denied-party screening, export license determination, and automated customs entry filing', size:'$1.3B', ai:'LOW' },
+        { name:'Supplier Audit & Compliance', desc:'Audit scheduling, corrective action tracking, continuous monitoring of ISO, SOC, and ESG certifications', size:'$800M', ai:'LOW' },
+        { name:'Purchase Order Reconciliation', desc:'Three-way matching of POs, goods receipts, and invoices with exception handling and duplicate detection', size:'$2.2B', ai:'MEDIUM' }
+      ],
+      hrworkforce: [
+        { name:'I-9 & E-Verify Compliance', desc:'Digital Form I-9 completion, document verification, E-Verify case submission, and audit-ready retention', size:'$2.3B', ai:'LOW' },
+        { name:'EEOC Reporting & Analytics', desc:'EEO-1 data collection, pay data analysis, adverse impact calculations, and affirmative action plan filing', size:'$500M', ai:'LOW' },
+        { name:'Benefits Administration', desc:'Open enrollment, life-event processing, carrier feed automation, ACA compliance, and COBRA administration', size:'$1.9B', ai:'MEDIUM' },
+        { name:'Workplace Safety (OSHA/HR)', desc:'Incident reporting, OSHA 300 log management, return-to-work coordination, and safety training compliance', size:'$840M', ai:'LOW' },
+        { name:'Leave Management (FMLA)', desc:'FMLA eligibility determination, intermittent leave tracking, state paid leave law compliance, and ADA documentation', size:'$650M', ai:'LOW' }
+      ],
+      hospitality: [
+        { name:'Health Department Inspections', desc:'Inspection readiness checklists, violation tracking, corrective action workflows across multi-unit operations', size:'$510M', ai:'LOW' },
+        { name:'Franchise Compliance Auditing', desc:'Brand standards verification, operational audit scheduling, and franchisee scorecard management for QSR and hotels', size:'$600M', ai:'LOW' },
+        { name:'Liquor & Alcohol Licensing', desc:'License applications, renewal tracking, state ABC compliance monitoring, and server certification management', size:'$800M', ai:'LOW' },
+        { name:'Food Safety (HACCP/FSMA)', desc:'Hazard analysis documentation, critical control point monitoring, temperature logging, and recall readiness', size:'$480M', ai:'LOW' },
+        { name:'Tip & Wage Compliance', desc:'Tip credit calculations, tip pooling rules, minimum wage tracking across jurisdictions, and DOL audit prep', size:'$350M', ai:'LOW' }
+      ],
+      mining: [
+        { name:'MSHA Safety Compliance', desc:'Mine safety plan management, inspection tracking, citation response, and Part 50 quarterly injury reporting', size:'$600M', ai:'LOW' },
+        { name:'Environmental Impact Assessments', desc:'NEPA documentation, baseline studies, mitigation tracking, public comment management for mine permitting', size:'$1.4B', ai:'LOW' },
+        { name:'Mineral Rights & Royalty Reporting', desc:'Lease obligation tracking, production volume reconciliation, royalty calculations, and BLM/state reporting', size:'$400M', ai:'LOW' },
+        { name:'Reclamation Bond Management', desc:'Bond amount calculations, surety coordination, progressive reclamation tracking, and agency release applications', size:'$200M', ai:'LOW' },
+        { name:'Water Use Permitting', desc:'Water rights applications, discharge monitoring, Clean Water Act compliance, and aquifer testing documentation', size:'$300M', ai:'LOW' }
       ]
     };
 
@@ -1162,6 +1210,13 @@
           </div>
 
         </div>`;
+
+      // Add live analysis indicator
+      html += `<div style="text-align:center;margin-top:2rem;padding:1rem;border-top:1px solid var(--border);">
+        <p class="mono text-xs text-[var(--text-muted)]">
+          ⚡ Analysis generated live &mdash; results reflect current market data as of ${new Date().toLocaleDateString('en-US', {month:'long', day:'numeric', year:'numeric'})}
+        </p>
+      </div>`;
 
       document.getElementById('results').innerHTML = html;
       document.getElementById('results').scrollIntoView({ behavior:'smooth', block:'start' });
