@@ -89,6 +89,11 @@
     @keyframes stepFade { 0%{opacity:0;transform:translateX(-8px)} 100%{opacity:1;transform:translateX(0)} }
     .step-item { animation:stepFade .3s ease forwards; }
     @media(max-width:640px){ .search-row{flex-direction:column} .btn-analyze{width:100%;padding:.85rem} }
+    /* News cards */
+    .news-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 1rem 1.25rem; margin-bottom: .5rem; }
+    .news-headline { font-size: .9rem; font-weight: 500; color: var(--text); margin-bottom: .35rem; }
+    .news-meta { font-family: 'JetBrains Mono', monospace; font-size: .65rem; color: var(--text-muted); margin-bottom: .35rem; }
+    .news-relevance { font-size: .8rem; color: var(--text-dim); line-height: 1.5; }
     /* Pins Tab */
     .pins-empty { display:flex; flex-direction:column; align-items:center; justify-content:center; padding:3rem 1.5rem; text-align:center; }
     .pins-empty-icon { font-size:2.5rem; margin-bottom:1rem; opacity:.5; }
@@ -639,12 +644,17 @@
 
         let rows = pins.map(pin => {
           const pinnedDate = pin.created_at ? new Date(pin.created_at).toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' }) : '';
+          // TODO: Add pin.last_analyzed from API when available; for now show pin creation date as "Last analyzed"
+          const lastAnalyzedDate = pin.last_analyzed
+            ? new Date(pin.last_analyzed).toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' })
+            : pinnedDate;
           return `
             <div class="pin-list-item" data-pin-row-id="${pin.id}">
               <div class="pin-list-info">
                 <div class="pin-list-vertical">${escHtml(pin.vertical)}</div>
                 ${pin.label ? `<div class="pin-list-label">${escHtml(pin.label)}</div>` : ''}
                 ${pinnedDate ? `<div class="pin-list-meta">Pinned ${pinnedDate}</div>` : ''}
+                ${lastAnalyzedDate ? `<div class="pin-list-meta" style="color:var(--text-muted);opacity:.7">Last analyzed: ${lastAnalyzedDate}</div>` : ''}
               </div>
               <div class="pin-list-actions">
                 <button class="btn-analyze-sm" data-action="run-from-discover" data-workflow-name="${escHtml(pin.vertical)}">Analyze →</button>
@@ -1098,6 +1108,24 @@
         </div>
       ` : '';
 
+      // Recent News section (built before template so we avoid nested backtick issues)
+      const hasNews = d.recentNews && d.recentNews.length > 0;
+      const newsCards = hasNews ? d.recentNews.map(n => {
+        const meta = n.source ? escHtml(n.source) + (n.date ? ' \u00b7 ' + escHtml(n.date) : '') : (n.date ? escHtml(n.date) : '');
+        return '<div class="news-card">'
+          + '<div class="news-headline">' + escHtml(n.headline) + '</div>'
+          + (meta ? '<div class="news-meta">' + meta + '</div>' : '')
+          + (n.relevance ? '<div class="news-relevance">' + escHtml(n.relevance) + '</div>' : '')
+          + '</div>';
+      }).join('') : '';
+
+      // Dynamic section numbers: 01=Overview, 02=Competitors, then news (if present), scores, venture, comparable
+      let sn = 3; // next section after competitors (02)
+      const snNews = hasNews ? '0' + (sn++) : '';
+      const snScores = sn < 10 ? '0' + (sn++) : '' + (sn++);
+      const snVenture = sn < 10 ? '0' + (sn++) : '' + (sn++);
+      const snComparable = sn < 10 ? '0' + (sn++) : '' + (sn++);
+
       const html = `
         <div class="space-y-8 fade-in">
 
@@ -1158,9 +1186,19 @@
             </div>
           </div>
 
+          <!-- Recent News & Signals -->
+          ${hasNews ? `
+          <div>
+            <div class="section-label">📰 ${snNews}</div>
+            <div class="section-title">Recent News &amp; Signals</div>
+            <div class="divider"></div>
+            <div class="space-y-2">${newsCards}</div>
+          </div>
+          ` : ''}
+
           <!-- Scores -->
           <div>
-            <div class="section-label">03</div>
+            <div class="section-label">${snScores}</div>
             <div class="section-title">Nexus3 Fit Scores</div>
             <div class="divider"></div>
             <div class="grid grid-cols-1 gap-3 mb-6">${scoreCards}</div>
@@ -1179,7 +1217,7 @@
           ${showVenture ? `
           <!-- Venture Outline -->
           <div>
-            <div class="section-label">04</div>
+            <div class="section-label">${snVenture}</div>
             <div class="flex items-center justify-between">
               <div class="section-title">If We Did It</div>
               <button id="ventureToggle" data-action="toggle-venture" class="collapse-btn">
@@ -1197,7 +1235,7 @@
 
           <!-- Comparable -->
           <div>
-            <div class="section-label">05</div>
+            <div class="section-label">${snComparable}</div>
             <div class="section-title">Comparable Nexus3 Ventures</div>
             <div class="divider"></div>
             <div class="p-4 rounded-lg" style="background:var(--surface);border:1px solid var(--border)">
