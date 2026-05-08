@@ -1212,13 +1212,13 @@
         </div>`;
 
       // Add live analysis indicator
-      html += `<div style="text-align:center;margin-top:2rem;padding:1rem;border-top:1px solid var(--border);">
+      const fullHtml = html + `<div style="text-align:center;margin-top:2rem;padding:1rem;border-top:1px solid var(--border);">
         <p class="mono text-xs text-[var(--text-muted)]">
           ⚡ Analysis generated live &mdash; results reflect current market data as of ${new Date().toLocaleDateString('en-US', {month:'long', day:'numeric', year:'numeric'})}
         </p>
       </div>`;
 
-      document.getElementById('results').innerHTML = html;
+      document.getElementById('results').innerHTML = fullHtml;
       document.getElementById('results').scrollIntoView({ behavior:'smooth', block:'start' });
 
       // Check if this vertical is already pinned
