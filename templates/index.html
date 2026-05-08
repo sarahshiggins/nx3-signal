@@ -146,7 +146,7 @@
     <div class="modal-box">
       <div class="flex items-center justify-between mb-4">
         <h2 class="bebas text-2xl tracking-wider">📌 Pin This Vertical</h2>
-        <button onclick="closePinModal()" class="text-[var(--text-dim)] hover:text-[var(--text)] transition-colors text-2xl leading-none">&times;</button>
+        <button data-action="close-pin-modal" class="text-[var(--text-dim)] hover:text-[var(--text)] transition-colors text-2xl leading-none">&times;</button>
       </div>
       <div class="divider" style="margin-top:0"></div>
       <p class="text-sm text-[var(--text-dim)] mb-5">
@@ -157,8 +157,8 @@
       <label class="block text-xs text-[var(--text-muted)] mb-1 mono tracking-wider uppercase">Label <span class="normal-case">(optional)</span></label>
       <input id="pinLabel" type="text" class="modal-input" placeholder="e.g. Workers Comp" />
       <div class="flex gap-3 mt-2">
-        <button onclick="submitPin()" class="btn-analyze flex-1 py-2.5 rounded-md text-sm">Save Pin</button>
-        <button onclick="closePinModal()" class="flex-1 py-2.5 rounded-md text-sm border border-[var(--border)] text-[var(--text-dim)] hover:border-[var(--accent)] hover:text-[var(--text)] transition-colors">Cancel</button>
+        <button data-action="submit-pin" class="btn-analyze flex-1 py-2.5 rounded-md text-sm">Save Pin</button>
+        <button data-action="close-pin-modal" class="flex-1 py-2.5 rounded-md text-sm border border-[var(--border)] text-[var(--text-dim)] hover:border-[var(--accent)] hover:text-[var(--text)] transition-colors">Cancel</button>
       </div>
       <div id="pinStatus" class="mt-3 text-xs text-center" style="display:none"></div>
     </div>
@@ -184,8 +184,8 @@
         <div class="flex gap-3 search-row">
           <input id="verticalInput" type="text" class="search-input rounded-lg px-4 py-3 text-base"
             placeholder="Enter a market vertical (e.g. Construction, Trucking, Dental RCM...)"
-            onkeydown="if(event.key==='Enter') runAnalysis()" />
-          <button id="analyzeBtn" onclick="runAnalysis()" class="btn-analyze px-6 py-3 rounded-lg">Run Analysis</button>
+            />
+          <button id="analyzeBtn" data-action="run-analysis" class="btn-analyze px-6 py-3 rounded-lg">Run Analysis</button>
         </div>
         <p class="text-xs text-[var(--text-muted)] mt-2 mono">Scored against the Nexus3 investment thesis · Powered by Perplexity sonar</p>
       </div>
@@ -202,7 +202,7 @@
           <div class="text-3xl mb-3">⚡</div>
           <p class="font-medium mb-1">Analysis failed</p>
           <p id="errorMessage" class="text-sm text-[var(--text-dim)]"></p>
-          <button onclick="clearError()" class="mt-4 text-xs text-[var(--accent)] hover:underline">Dismiss</button>
+          <button data-action="clear-error" class="mt-4 text-xs text-[var(--accent)] hover:underline">Dismiss</button>
         </div>
       </div>
 
@@ -223,8 +223,8 @@
         <div class="flex gap-3" style="flex-wrap:wrap">
           <input id="discoverInput" type="text" class="search-input rounded-lg px-4 py-3 text-base" style="flex:1;min-width:200px"
             placeholder="Search any market vertical..."
-            onkeydown="if(event.key==='Enter') runDiscoverAnalysis()" />
-          <button onclick="runDiscoverAnalysis()" class="btn-analyze px-6 py-3 rounded-lg">Run Analysis →</button>
+            />
+          <button data-action="run-discover-analysis" class="btn-analyze px-6 py-3 rounded-lg">Run Analysis →</button>
         </div>
       </div>
 
@@ -241,7 +241,7 @@
               <span class="mono text-xs text-[var(--text-muted)] uppercase tracking-wider">Pinned Verticals</span>
               <span id="watchlistCount" class="mono text-xs text-[var(--text-muted)] ml-3"></span>
             </div>
-            <button onclick="refreshWatchlist()" class="mono text-xs text-[var(--text-muted)] hover:text-[var(--text)] transition-colors">↻ Refresh</button>
+            <button data-action="refresh-watchlist" class="mono text-xs text-[var(--text-muted)] hover:text-[var(--text)] transition-colors">↻ Refresh</button>
           </div>
           <div id="watchlistItems"></div>
         </div>
@@ -376,7 +376,7 @@
         const interestClass = v.interest === 'HIGH' ? 'interest-high' : v.interest === 'MEDIUM' ? 'interest-medium' : 'interest-lower';
         const badgeClass = v.interest === 'HIGH' ? 'high' : v.interest === 'MEDIUM' ? 'medium' : 'lower';
         html += `
-          <div class="vertical-card ${interestClass}" id="vcard-${v.id}" onclick="toggleWorkflows('${v.id}')">
+          <div class="vertical-card ${interestClass}" id="vcard-${v.id}" data-vertical-id="${v.id}">
             <div class="vertical-card-name">${v.name}</div>
             <div class="vertical-card-desc">${v.desc}</div>
             <div class="flex items-center justify-between">
@@ -423,7 +423,7 @@
             <div class="workflow-meta">
               <span class="market-size-tag">${wf.size}</span>
               <span class="ai-badge ${aiBadgeClass}">${aiBadgeLabel}</span>
-              <button class="run-btn" onclick="runFromDiscover(${JSON.stringify(wf.name)})">Run Analysis →</button>
+              <button class="run-btn" data-action="run-from-discover" data-workflow-name="${escHtml(wf.name)}">Run Analysis →</button>
             </div>
           </div>`;
       });
@@ -431,7 +431,7 @@
         <div class="workflow-panel">
           <div class="workflow-panel-header">
             <span class="workflow-panel-title">${escHtml(v.name)} -- ${wfs.length} Workflows</span>
-            <button class="back-btn" onclick="toggleWorkflows('${verticalId}')">← Close</button>
+            <button class="back-btn" data-action="close-workflow-panel" data-vertical-id="${verticalId}">← Close</button>
           </div>
           <div>${rows}</div>
         </div>`;
@@ -639,8 +639,8 @@
               ${pin.label ? `<div class="watchlist-label">${escHtml(pin.label)}</div>` : ''}
             </div>
             <div class="flex items-center gap-2">
-              <button class="run-btn" style="font-size:.7rem;padding:.3rem .65rem" onclick="runFromDiscover(${JSON.stringify(pin.vertical)})">Analyze →</button>
-              <button class="unpin-btn" onclick="unpin(${pin.id})">Unpin</button>
+              <button class="run-btn" style="font-size:.7rem;padding:.3rem .65rem" data-action="run-from-discover" data-workflow-name="${escHtml(pin.vertical)}">Analyze →</button>
+              <button class="unpin-btn" data-action="unpin" data-pin-id="${pin.id}">Unpin</button>
             </div>
           </div>
         `).join('');
@@ -752,10 +752,10 @@
             <div class="flex flex-col items-end gap-2">
               <span class="verdict-badge ${verdict.cls}">${verdict.label}</span>
               <span class="mono text-xs text-[var(--text-dim)]">avg score: ${verdict.avg} / 5.0</span>
-              <button id="pinResultBtn" class="btn-pin" onclick="openPinModal(${JSON.stringify(d.vertical||currentVertical)})">
+              <button id="pinResultBtn" class="btn-pin" data-action="open-pin-modal" data-vertical="${escHtml(d.vertical||currentVertical)}">
                 📌 Pin this vertical
               </button>
-              <button onclick="showDiscoverTab()" class="mono text-xs text-[var(--text-muted)] hover:text-[var(--text)] transition-colors mt-1">← Back to Discover</button>
+              <button data-action="show-discover-tab" class="mono text-xs text-[var(--text-muted)] hover:text-[var(--text)] transition-colors mt-1">← Back to Discover</button>
             </div>
           </div>
 
@@ -824,14 +824,14 @@
             <div class="section-label">04</div>
             <div class="flex items-center justify-between">
               <div class="section-title">If We Did It</div>
-              <button id="ventureToggle" onclick="toggleVenture()" class="collapse-btn">
+              <button id="ventureToggle" data-action="toggle-venture" class="collapse-btn">
                 <span id="ventureToggleIcon">▼</span>
                 <span id="ventureToggleText">Expand</span>
               </button>
             </div>
             <div class="divider"></div>
             <div id="ventureContent" class="space-y-4">${playbookItems}</div>
-            <div id="ventureCollapsed" style="display:none" class="p-4 rounded-lg text-center cursor-pointer" onclick="toggleVenture()">
+            <div id="ventureCollapsed" style="display:none" class="p-4 rounded-lg text-center cursor-pointer" data-action="toggle-venture">
               <p class="text-sm text-[var(--text-muted)]">Venture outline available -- click to expand</p>
             </div>
           </div>
@@ -874,11 +874,72 @@
     window.addEventListener('DOMContentLoaded', () => {
       renderDiscover();
       refreshWatchlist();
-    });
 
-    // Close pin modal on overlay click
-    document.addEventListener('click', (e) => {
-      if (e.target.id === 'pinModal') closePinModal();
+      // --- Global event delegation (replaces all inline onclick handlers) ---
+      document.addEventListener('click', (e) => {
+        // Close pin modal on overlay click
+        if (e.target.id === 'pinModal') { closePinModal(); return; }
+
+        // Check for data-action on clicked element or its ancestors
+        const actionEl = e.target.closest('[data-action]');
+        if (!actionEl) {
+          // Check for vertical card click (card itself has data-vertical-id)
+          const card = e.target.closest('.vertical-card[data-vertical-id]');
+          if (card) {
+            const id = card.dataset.verticalId;
+            if (id) toggleWorkflows(id);
+          }
+          return;
+        }
+
+        const action = actionEl.dataset.action;
+        switch (action) {
+          case 'close-pin-modal':
+            closePinModal();
+            break;
+          case 'submit-pin':
+            submitPin();
+            break;
+          case 'run-analysis':
+            runAnalysis();
+            break;
+          case 'run-discover-analysis':
+            runDiscoverAnalysis();
+            break;
+          case 'refresh-watchlist':
+            refreshWatchlist();
+            break;
+          case 'clear-error':
+            clearError();
+            break;
+          case 'run-from-discover':
+            if (actionEl.dataset.workflowName) runFromDiscover(actionEl.dataset.workflowName);
+            break;
+          case 'close-workflow-panel':
+            if (actionEl.dataset.verticalId) toggleWorkflows(actionEl.dataset.verticalId);
+            break;
+          case 'open-pin-modal':
+            if (actionEl.dataset.vertical) openPinModal(actionEl.dataset.vertical);
+            break;
+          case 'show-discover-tab':
+            showDiscoverTab();
+            break;
+          case 'toggle-venture':
+            toggleVenture();
+            break;
+          case 'unpin':
+            if (actionEl.dataset.pinId) unpin(parseInt(actionEl.dataset.pinId, 10));
+            break;
+        }
+      });
+
+      // Keyboard: Enter on search inputs
+      document.getElementById('verticalInput').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') runAnalysis();
+      });
+      document.getElementById('discoverInput').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') runDiscoverAnalysis();
+      });
     });
   </script>
 </body>
