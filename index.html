@@ -458,10 +458,6 @@ Respond ONLY with valid JSON (no markdown, no extra text) matching this exact sc
     "yearOneLooksLike": [string, string, string],
     "biggestRisk": string
   },
-  "comparable": {
-    "vertical": string,
-    "reason": string
-  }
 }
 
 Scoring criteria:
@@ -821,18 +817,7 @@ Be specific, data-driven, and honest. Use real company names for competitors.`;
           </div>
           ` : ''}
 
-          <div>
-            <div class="section-label">05</div>
-            <div class="section-title">Comparable Nexus3 Ventures</div>
-            <div class="divider"></div>
-            <div class="p-4 rounded-lg" style="background:var(--surface);border:1px solid var(--border)">
-              <div class="flex items-center gap-3 mb-2">
-                <span class="chip">${d.comparable.vertical}</span>
-                <span class="mono text-xs text-[var(--text-muted)]">closest match</span>
-              </div>
-              <p class="text-sm text-[var(--text-dim)] leading-relaxed">${d.comparable.reason}</p>
-            </div>
-          </div>
+
 
         </div>`;
 

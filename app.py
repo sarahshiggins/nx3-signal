@@ -147,10 +147,6 @@ Respond ONLY with valid JSON (no markdown, no extra text) matching this exact sc
   "recentNews": [
     {{ "headline": string, "source": string, "date": string (YYYY-MM-DD or "recent"), "url": string (direct URL to the article), "relevance": string (1 sentence on why this matters for AI opportunity) }}
   ],
-  "comparable": {{
-    "vertical": string,
-    "reason": string
-  }}
 }}
 
 Include 3-5 recent news articles, funding announcements, or market developments from the past 7 days that are relevant to this vertical. Use real sources and dates. Focus on: AI companies entering the space, funding rounds, regulatory changes, major partnerships, and big tech moves.
