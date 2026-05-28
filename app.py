@@ -193,6 +193,18 @@ Provide 3-5 developments. Be specific with company names, dollar amounts, and da
 
 # ─── Helpers ─────────────────────────────────────────────────────────────────
 
+import re
+
+def strip_citations(obj):
+    """Recursively strip Perplexity citation markers like [1], [2][6] from strings."""
+    if isinstance(obj, str):
+        return re.sub(r'\[\d+\]', '', obj).strip()
+    if isinstance(obj, list):
+        return [strip_citations(item) for item in obj]
+    if isinstance(obj, dict):
+        return {k: strip_citations(v) for k, v in obj.items()}
+    return obj
+
 def call_perplexity(prompt: str, system_msg: str = None) -> dict:
     """
     Call the Perplexity sonar API and return the parsed JSON response.
@@ -720,7 +732,7 @@ def analyze():
         except Exception as db_err:
             app.logger.warning(f"Failed to store analysis history: {db_err}")
 
-        return jsonify(result)
+        return jsonify(strip_citations(result))
 
     except requests.HTTPError as e:
         status = e.response.status_code if e.response else 500
