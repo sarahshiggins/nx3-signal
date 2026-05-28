@@ -255,7 +255,7 @@
       financial: [
         { name:'Commercial Lending Underwriting', desc:'Manual spreading of financials, regulated', size:'$15B', ai:'LOW' },
         { name:'Anti-Money Laundering (AML)', desc:'Transaction monitoring, manual review', size:'$25B', ai:'MEDIUM' },
-        { name:'Regulatory Reporting (Basel/Dodd-Frank)', desc:'Bank compliance, quarterly manual reports', size:'$12B', ai:'LOW' },
+        { name:'Regulatory Reporting', desc:'Bank compliance, quarterly manual reports', size:'$12B', ai:'LOW' },
         { name:'Mortgage Processing', desc:'Title, appraisal, underwriting — still manual', size:'$20B', ai:'MEDIUM' },
         { name:'Trade Settlement & Reconciliation', desc:'Back-office ops, high error rate', size:'$8B', ai:'LOW' },
         { name:'Wealth Management Compliance', desc:'Suitability reviews, fiduciary documentation', size:'$6B', ai:'LOW' }
@@ -656,7 +656,20 @@ Be specific, data-driven, and honest. Use real company names for competitors.`;
       return { label: 'WEAK FIT', cls: 'verdict-weak', avg: avg.toFixed(1) };
     }
 
+    // Strip Perplexity citation markers like [1], [2][6], etc.
+    function stripCitations(obj) {
+      if (typeof obj === 'string') return obj.replace(/\[\d+\]/g, '').trim();
+      if (Array.isArray(obj)) return obj.map(stripCitations);
+      if (obj && typeof obj === 'object') {
+        const out = {};
+        for (const [k, v] of Object.entries(obj)) out[k] = stripCitations(v);
+        return out;
+      }
+      return obj;
+    }
+
     function renderResults(d) {
+      d = stripCitations(d);
       document.getElementById('loadingState').style.display = 'none';
       document.getElementById('results').style.display = 'block';
 
