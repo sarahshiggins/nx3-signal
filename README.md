@@ -30,8 +30,6 @@ Type in any vertical, workflow, or industry segment (broad or specific) and get 
 - **Recent News & Signals** — 3-5 current articles with clickable links to sources
 - **Nexus3 Fit Scores** — 5 criteria scored 1-5 with rationale and overall verdict
 - **Venture Playbook** — painkiller, beachhead, moat, revenue model, year 1 plan, biggest risk
-- **Comparable** — which Nexus3 Tier 1 vertical this most resembles
-
 ### Pin & Track
 Pin verticals to your watchlist. See pin status across the app — on analysis results, discover cards, and the dedicated My Pins tab. Duplicate pins are prevented automatically.
 
@@ -69,7 +67,7 @@ The 5 criteria map directly to Nexus3's investment thesis:
 
 ## How to Use It
 
-1. Open [nx3-signal-production.up.railway.app](https://nx3-signal-production.up.railway.app)
+1. Open [nx3-signal.netlify.app](https://nx3-signal.netlify.app) (frontend) or [nx3-signal-production.up.railway.app](https://nx3-signal-production.up.railway.app) (full backend)
 2. Enter your email (first time only — stored in browser)
 3. Browse verticals on the Discover tab, or type anything into the Analyze tab
 4. Pin verticals you want to track
@@ -87,8 +85,8 @@ The 5 criteria map directly to Nexus3's investment thesis:
 | **Database** | SQLite — pins, analysis history, change tracking |
 | **Frontend** | Single-page app with Tailwind CSS, Bebas Neue + Inter + JetBrains Mono |
 | **Alerts** | Railway cron job runs daily comparison logic at 8 AM CT |
-| **Hosting** | Railway (backend + cron) |
-| **Source** | GitHub with auto-deploy on push |
+| **Hosting** | Railway (backend + cron), Netlify (frontend) |
+| **Source** | GitHub (`sarahshiggins/nx3-signal`) with auto-deploy on push |
 
 ---
 
@@ -106,6 +104,16 @@ The 5 criteria map directly to Nexus3's investment thesis:
 | GET | /api/unpin?token= | One-click unpin from email |
 | GET | /api/history | Analysis history for trend tracking |
 | POST | /api/send-alert | Trigger daily change detection scan |
+
+---
+
+## Architecture
+
+Two deployment paths from the same repo:
+- **Netlify** (`nx3-signal.netlify.app`) — serves `index.html` directly as a static frontend, calls Railway backend for API
+- **Railway** (`nx3-signal-production.up.railway.app`) — Flask backend serving the full app (API + templates), SQLite database, cron job for daily alerts
+
+Both auto-deploy from `main` on push.
 
 ---
 
